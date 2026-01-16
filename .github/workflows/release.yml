@@ -91,6 +91,53 @@ jobs:
 
       - name: Verify deployment
         run: |
-          kubectl get pods -n hello-world
+          echo "=== Pod Status ==="
+          kubectl get pods -n hello-world -o wide
+
+          echo ""
+          echo "=== Getting LoadBalancer URL ==="
           LB=$(kubectl get svc -n hello-world hello-world -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           echo "Service URL: http://$LB/"
+
+          echo ""
+          echo "=== Testing Load Balancer (20 requests) ==="
+          declare -A pod_hits
+          failed=0
+
+          for i in {1..20}; do
+            response=$(curl -s --max-time 5 "http://$LB/" || echo "FAILED")
+
+            if [[ "$response" == "FAILED" ]]; then
+              echo "Request $i: FAILED (timeout/error)"
+              ((failed++))
+            elif [[ "$response" == hello-world\ from\ * ]]; then
+              hostname=$(echo "$response" | sed 's/hello-world from //' | tr -d '\n')
+              pod_hits["$hostname"]=$((${pod_hits["$hostname"]:-0} + 1))
+              echo "Request $i: $hostname"
+            else
+              echo "Request $i: UNEXPECTED RESPONSE: $response"
+              ((failed++))
+            fi
+          done
+
+          echo ""
+          echo "=== Results ==="
+          echo "Unique pods reached: ${#pod_hits[@]}"
+          for pod in "${!pod_hits[@]}"; do
+            echo "  - $pod: ${pod_hits[$pod]} hits"
+          done
+          echo "Failed requests: $failed"
+
+          echo ""
+          echo "=== Validation ==="
+          if [[ ${#pod_hits[@]} -lt 2 ]]; then
+            echo "FAIL: Load balancer did not distribute to multiple pods"
+            exit 1
+          fi
+
+          if [[ $failed -gt 2 ]]; then
+            echo "FAIL: Too many failed requests ($failed/20)"
+            exit 1
+          fi
+
+          echo "PASS: Load balancing verified across ${#pod_hits[@]} pods"
