@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: eu-west-1
+  STACK_NAME: hello-world
+  KEY_NAME: hello-world-deploy-key
 
 jobs:
   lint:
@@ -46,5 +52,82 @@ jobs:
           name: dist
           path: dist/
       - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: dist/*
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create or use existing key pair
+        run: |
+          if ! aws ec2 describe-key-pairs --key-names ${{ env.KEY_NAME }} 2>/dev/null; then
+            aws ec2 create-key-pair \
+              --key-name ${{ env.KEY_NAME }} \
+              --query 'KeyMaterial' \
+              --output text > /tmp/deploy-key.pem
+          else
+            echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/deploy-key.pem
+          fi
+          chmod 600 /tmp/deploy-key.pem
+
+      - name: Deploy CloudFormation stack
+        run: |
+          aws cloudformation deploy \
+            --template-file infra/cloudformation.yml \
+            --stack-name ${{ env.STACK_NAME }} \
+            --parameter-overrides KeyName=${{ env.KEY_NAME }} \
+            --no-fail-on-empty-changeset
+
+      - name: Wait for EC2 instance
+        run: |
+          INSTANCE_ID=$(aws cloudformation describe-stack-resource \
+            --stack-name ${{ env.STACK_NAME }} \
+            --logical-resource-id EC2Instance \
+            --query 'StackResourceDetail.PhysicalResourceId' \
+            --output text)
+          aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID
+
+      - name: Get EC2 public IP
+        id: get-ip
+        run: |
+          IP=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`PublicIP`].OutputValue' \
+            --output text)
+          echo "ec2_ip=$IP" >> $GITHUB_OUTPUT
+
+      - name: Create Ansible inventory
+        run: |
+          cat > deploy/inventory.ini << EOF
+          [hello-world]
+          ${{ steps.get-ip.outputs.ec2_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=/tmp/deploy-key.pem
+          EOF
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Deploy with Ansible
+        run: |
+          cd deploy
+          uv run ansible-playbook -i inventory.ini playbook.yml
+
+      - name: Verify deployment
+        run: |
+          sleep 5
+          curl -s --fail http://${{ steps.get-ip.outputs.ec2_ip }}:49000/
+          echo ""
+          echo "Deployment successful: http://${{ steps.get-ip.outputs.ec2_ip }}:49000"
