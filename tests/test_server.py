@@ -12,7 +12,8 @@ def test_hello_world_response():
     thread.start()
 
     response = urllib.request.urlopen(f"http://127.0.0.1:{port}/")
-    assert response.read() == b"hello-world"
+    body = response.read().decode()
+    assert body.startswith("hello-world from ")
     assert response.status == 200
 
     thread.join()

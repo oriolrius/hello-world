@@ -1,4 +1,5 @@
 import argparse
+import socket
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
@@ -7,7 +8,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/plain")
         self.end_headers()
-        self.wfile.write(b"hello-world")
+        hostname = socket.gethostname()
+        self.wfile.write(f"hello-world from {hostname}\n".encode())
 
 
 def main():
