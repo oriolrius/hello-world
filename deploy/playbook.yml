@@ -1,0 +1,46 @@
+---
+- name: Deploy hello-world
+  hosts: all
+  become: true
+  vars:
+    app_port: 49000
+    app_bind: "0.0.0.0"
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+        state: present
+        update_cache: true
+
+    - name: Install uv
+      shell: curl -LsSf https://astral.sh/uv/install.sh | sh
+      args:
+        creates: /root/.local/bin/uv
+
+    - name: Install hello-world with uv
+      shell: /root/.local/bin/uv tool install hello-world --from git+https://github.com/oriolrius/hello-world --force
+      environment:
+        PATH: "/root/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+
+    - name: Create systemd service
+      template:
+        src: hello-world.service.j2
+        dest: /etc/systemd/system/hello-world.service
+        mode: '0644'
+      notify: Restart hello-world
+
+    - name: Enable and start hello-world service
+      systemd:
+        name: hello-world
+        enabled: true
+        state: started
+        daemon_reload: true
+
+  handlers:
+    - name: Restart hello-world
+      systemd:
+        name: hello-world
+        state: restarted
+        daemon_reload: true

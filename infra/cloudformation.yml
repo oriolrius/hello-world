@@ -104,39 +104,6 @@ Resources:
       Tags:
         - Key: Name
           Value: hello-world
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          set -e
-
-          # Install uv
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          export PATH="/root/.local/bin:$PATH"
-
-          # Install hello-world
-          uv tool install hello-world --from git+https://github.com/oriolrius/hello-world
-
-          # Create systemd service
-          cat > /etc/systemd/system/hello-world.service << 'EOF'
-          [Unit]
-          Description=Hello World Web Server
-          After=network.target
-
-          [Service]
-          Type=simple
-          User=root
-          ExecStart=/root/.local/bin/hello-world --bind 0.0.0.0 --port 49000
-          Restart=always
-          RestartSec=5
-
-          [Install]
-          WantedBy=multi-user.target
-          EOF
-
-          # Enable and start service
-          systemctl daemon-reload
-          systemctl enable hello-world
-          systemctl start hello-world
 
 Conditions:
   HasKeyName: !Not [!Equals [!Ref KeyName, '']]
