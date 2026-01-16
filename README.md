@@ -32,7 +32,16 @@ uvx --from git+https://github.com/oriolrius/hello-world hello-world
 
 ```bash
 uv build
-uvx --from ./dist/hello_world-0.1.0-py3-none-any.whl hello-world
+uvx --from ./dist/hello_world-*.whl hello-world
+```
+
+## Development
+
+```bash
+uv run ruff check src/ tests/   # lint
+uv run ruff format src/ tests/  # format
+uv run pytest -v                # test
+uv build                        # build .tar.gz and .whl
 ```
 
 ## Parameters
