@@ -84,14 +84,61 @@ The instance runs hello-world as a systemd service on port 49000.
 | `KeyName` | EC2 Key Pair for SSH access | _(none)_ |
 | `AllowedIP` | CIDR for SSH access | `0.0.0.0/0` |
 
+### SSH Access
+
+To enable SSH access, create a key pair first:
+
+```bash
+# Create key pair and save private key
+aws ec2 create-key-pair \
+  --key-name hello-world-key \
+  --region eu-west-1 \
+  --query 'KeyMaterial' \
+  --output text > ~/.ssh/hello-world-key.pem
+
+# Set correct permissions
+chmod 600 ~/.ssh/hello-world-key.pem
+```
+
+Then deploy with the key:
+
+```bash
+aws cloudformation deploy \
+  --template-file infra/cloudformation.yml \
+  --stack-name hello-world \
+  --region eu-west-1 \
+  --parameter-overrides KeyName=hello-world-key
+```
+
+Connect to the instance:
+
+```bash
+# Get public IP
+IP=$(aws cloudformation describe-stacks \
+  --stack-name hello-world \
+  --region eu-west-1 \
+  --query 'Stacks[0].Outputs[?OutputKey==`PublicIP`].OutputValue' \
+  --output text)
+
+# SSH into the instance
+ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP
+```
+
 ### Manual Deployment
 
 ```bash
-# Deploy stack
+# Deploy stack (without SSH)
 aws cloudformation deploy \
   --template-file infra/cloudformation.yml \
   --stack-name hello-world \
   --region eu-west-1
+
+# Deploy stack (with SSH access)
+aws cloudformation deploy \
+  --template-file infra/cloudformation.yml \
+  --stack-name hello-world \
+  --region eu-west-1 \
+  --parameter-overrides KeyName=hello-world-key
 
 # Get outputs (IP, URL)
 aws cloudformation describe-stacks \
