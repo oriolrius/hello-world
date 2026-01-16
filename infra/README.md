@@ -76,12 +76,33 @@ kubectl get nodes -o wide
 
 ## CloudFormation Stacks
 
-The cluster infrastructure is managed by these CloudFormation stacks:
+When you run `eksctl create cluster -f infra/eksctl-cluster.yaml`, eksctl translates the YAML configuration into AWS CloudFormation templates and creates these stacks:
 
-| Stack | Purpose |
-|-------|---------|
-| eksctl-esade-teaching-cluster | Control plane, VPC, networking |
-| eksctl-esade-teaching-nodegroup-students | Managed node group |
+| Stack | Created From | Purpose |
+|-------|--------------|---------|
+| eksctl-esade-teaching-cluster | `metadata` section | Control plane, VPC, subnets, IAM roles, security groups, internet gateway, NAT gateway |
+| eksctl-esade-teaching-nodegroup-students | `managedNodeGroups[0]` section | EC2 instances, auto-scaling group, node IAM role, launch template |
+
+This separation allows independent management:
+- Scale or modify node groups without affecting the control plane
+- Add additional node groups as separate stacks
+- Delete node groups while keeping the cluster running
+
+### View Stacks
+
+```bash
+aws cloudformation list-stacks --query "StackSummaries[?contains(StackName, 'esade-teaching')].[StackName,StackStatus]" --output table
+```
+
+### Stack Resources
+
+```bash
+# View cluster stack resources
+aws cloudformation list-stack-resources --stack-name eksctl-esade-teaching-cluster --output table
+
+# View nodegroup stack resources
+aws cloudformation list-stack-resources --stack-name eksctl-esade-teaching-nodegroup-students --output table
+```
 
 ## Cost Estimation
 

@@ -83,7 +83,14 @@ Create the cluster using eksctl:
 eksctl create cluster -f infra/eksctl-cluster.yaml
 ```
 
-This creates:
+This creates two **AWS CloudFormation stacks**:
+
+| Stack | Purpose |
+|-------|---------|
+| `eksctl-esade-teaching-cluster` | Control plane, VPC, subnets, networking |
+| `eksctl-esade-teaching-nodegroup-students` | EC2 nodes, auto-scaling group |
+
+Resources provisioned:
 - EKS cluster `esade-teaching` in `eu-west-1`
 - Managed node group with 2x t3.medium instances
 - VPC with public/private subnets
