@@ -5,7 +5,7 @@ metadata:
   namespace: hello-world
   labels:
     app.kubernetes.io/name: hello-world
-    app.kubernetes.io/version: "5.1.0"
+    app.kubernetes.io/version: "6.0.0"
 spec:
   replicas: 2
   selector:
@@ -15,7 +15,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: hello-world
-        app.kubernetes.io/version: "5.1.0"
+        app.kubernetes.io/version: "6.0.0"
     spec:
       containers:
         - name: hello-world

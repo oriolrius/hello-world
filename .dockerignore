@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Tests
+tests/
+.pytest_cache/
+
+# Infrastructure
+infra/
+k8s/
+
+# Docs
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
