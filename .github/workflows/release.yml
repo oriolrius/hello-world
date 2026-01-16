@@ -8,8 +8,7 @@ on:
 
 env:
   AWS_REGION: eu-west-1
-  STACK_NAME: hello-world
-  KEY_NAME: hello-world-deploy-key
+  EKS_CLUSTER: esade-teaching
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -66,6 +65,8 @@ jobs:
       packages: write
       attestations: write
       id-token: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -96,7 +97,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: docker/Dockerfile
+          file: Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -112,11 +113,9 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [docker]
     steps:
       - uses: actions/checkout@v4
-
-      - uses: astral-sh/setup-uv@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -126,83 +125,39 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Delete existing stack if present
+      - name: Configure kubectl
         run: |
-          if aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} 2>/dev/null; then
-            echo "Deleting existing stack..."
-            aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}
-            echo "Waiting for stack deletion..."
-            aws cloudformation wait stack-delete-complete --stack-name ${{ env.STACK_NAME }}
-            echo "Stack deleted"
-          else
-            echo "No existing stack found"
-          fi
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
-      - name: Delete existing key pair if present
+      - name: Deploy to EKS
         run: |
-          if aws ec2 describe-key-pairs --key-names ${{ env.KEY_NAME }} 2>/dev/null; then
-            echo "Deleting existing key pair..."
-            aws ec2 delete-key-pair --key-name ${{ env.KEY_NAME }}
-            echo "Key pair deleted"
-          else
-            echo "No existing key pair found"
-          fi
+          kubectl apply -k k8s/
 
-      - name: Create new key pair
+      - name: Wait for deployment rollout
         run: |
-          aws ec2 create-key-pair \
-            --key-name ${{ env.KEY_NAME }} \
-            --query 'KeyMaterial' \
-            --output text > /tmp/deploy-key.pem
-          chmod 600 /tmp/deploy-key.pem
-          echo "New key pair created"
-
-      - name: Deploy CloudFormation stack
-        run: |
-          aws cloudformation deploy \
-            --template-file infra/cloudformation.yml \
-            --stack-name ${{ env.STACK_NAME }} \
-            --parameter-overrides KeyName=${{ env.KEY_NAME }}
-
-      - name: Wait for EC2 instance
-        run: |
-          INSTANCE_ID=$(aws cloudformation describe-stack-resource \
-            --stack-name ${{ env.STACK_NAME }} \
-            --logical-resource-id EC2Instance \
-            --query 'StackResourceDetail.PhysicalResourceId' \
-            --output text)
-          aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID
-
-      - name: Get EC2 public IP
-        id: get-ip
-        run: |
-          IP=$(aws cloudformation describe-stacks \
-            --stack-name ${{ env.STACK_NAME }} \
-            --query 'Stacks[0].Outputs[?OutputKey==`PublicIP`].OutputValue' \
-            --output text)
-          echo "ec2_ip=$IP" >> $GITHUB_OUTPUT
-
-      - name: Create Ansible inventory
-        run: |
-          cat > deploy/inventory.ini << EOF
-          [hello-world]
-          ${{ steps.get-ip.outputs.ec2_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=/tmp/deploy-key.pem
-          EOF
-
-      - name: Install dependencies
-        run: uv sync --dev
-
-      - name: Install Ansible collections
-        run: uv run ansible-galaxy collection install -r deploy/requirements.yml
-
-      - name: Deploy with Ansible
-        run: |
-          cd deploy
-          uv run ansible-playbook -i inventory.ini playbook.yml
+          kubectl rollout status deployment/hello-world -n hello-world --timeout=120s
 
       - name: Verify deployment
         run: |
-          sleep 5
-          curl -s --fail http://${{ steps.get-ip.outputs.ec2_ip }}:49000/
+          kubectl get pods -n hello-world
+          kubectl get svc -n hello-world
+
+      - name: Get LoadBalancer URL
+        run: |
+          echo "Waiting for LoadBalancer..."
+          for i in {1..30}; do
+            LB=$(kubectl get svc -n hello-world hello-world -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+            if [ -n "$LB" ]; then
+              echo "LoadBalancer URL: http://$LB/"
+              break
+            fi
+            sleep 10
+          done
+
+      - name: Test deployment
+        run: |
+          sleep 30
+          LB=$(kubectl get svc -n hello-world hello-world -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl -s --fail --retry 5 --retry-delay 10 http://$LB/
           echo ""
-          echo "Deployment successful: http://${{ steps.get-ip.outputs.ec2_ip }}:49000"
+          echo "Deployment successful!"

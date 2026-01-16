@@ -18,7 +18,6 @@ packages = ["src/hello_world"]
 
 [dependency-groups]
 dev = [
-    "ansible>=13.2.0",
     "pytest>=9.0.2",
     "ruff>=0.14.13",
 ]

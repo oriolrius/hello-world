@@ -25,12 +25,9 @@ tests/
 
 # Infrastructure
 infra/
-deploy/
+k8s/
 
-# Docker
-docker/
-
-# Docs (keep README.md for build)
+# Docs
 CHANGELOG.md
 CONTRIBUTING.md
 LICENSE
