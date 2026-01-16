@@ -192,6 +192,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
+      - name: Install Ansible collections
+        run: uv run ansible-galaxy collection install -r deploy/requirements.yml
+
       - name: Deploy with Ansible
         run: |
           cd deploy
