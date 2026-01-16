@@ -1,172 +1,262 @@
 # hello-world
 
-Simple web server that returns `hello-world`.
+Simple web server that returns `hello-world from <hostname>`, useful for demonstrating Kubernetes load balancing.
 
-## Installation
-
-```bash
-uv sync
-```
-
-## Usage
-
-### Development mode
+## Quick Start
 
 ```bash
+# Run locally
 uv run hello-world
-```
 
-### From virtual environment
-
-```bash
-.venv/bin/hello-world
-```
-
-### With uvx (no install)
-
-```bash
-uvx --from git+https://github.com/oriolrius/hello-world hello-world
-```
-
-### From wheel
-
-```bash
-uv build
-uvx --from ./dist/hello_world-*.whl hello-world
+# Test
+curl http://localhost:49000/
+# Output: hello-world from <your-hostname>
 ```
 
 ## Development
 
 ```bash
-uv run ruff check src/ tests/   # lint
-uv run ruff format src/ tests/  # format
-uv run pytest -v                # test
-uv build                        # build .tar.gz and .whl
+uv sync                          # Install dependencies
+uv run hello-world               # Run server
+uv run ruff check src/ tests/    # Lint
+uv run ruff format src/ tests/   # Format
+uv run pytest -v                 # Test
 ```
 
-## Parameters
+### Parameters
 
 | Flag | Description | Default |
 |------|-------------|---------|
 | `-b, --bind` | Bind address | `0.0.0.0` |
 | `-p, --port` | Port number | `49000` |
 
-## Examples
+---
 
-```bash
-hello-world                        # http://0.0.0.0:49000
-hello-world -p 8080                # http://0.0.0.0:8080
-hello-world -b 127.0.0.1 -p 3000   # http://127.0.0.1:3000
+## EKS Deployment
+
+Deploy to Amazon EKS with automated CI/CD via GitHub Actions.
+
+### Architecture
+
+```
+GitHub Actions (CI/CD)
+    │
+    ├── lint & test
+    ├── build Docker image → ghcr.io/oriolrius/hello-world
+    └── deploy to EKS
+            │
+            ▼
+    ┌─────────────────────────────────────┐
+    │  EKS Cluster: esade-teaching        │
+    │  Region: eu-west-1                  │
+    │                                     │
+    │  ┌─────────────────────────────┐    │
+    │  │  Namespace: hello-world     │    │
+    │  │                             │    │
+    │  │  ┌─────┐  ┌─────┐          │    │
+    │  │  │ Pod │  │ Pod │  (2x)    │    │
+    │  │  └──┬──┘  └──┬──┘          │    │
+    │  │     └────┬───┘             │    │
+    │  │          ▼                 │    │
+    │  │   LoadBalancer (AWS ELB)   │    │
+    │  └─────────────────────────────┘    │
+    └─────────────────────────────────────┘
+            │
+            ▼
+    http://<elb-hostname>/
 ```
 
-## AWS Deployment
+### Prerequisites
 
-Deploy to AWS EC2 using CloudFormation.
+- AWS CLI configured with valid credentials
+- kubectl installed
+- eksctl installed (for cluster creation)
+- Access to GitHub repository secrets
 
-### Infrastructure
+---
 
-The CloudFormation template (`infra/cloudformation.yml`) creates:
+## 1. Create EKS Cluster
 
-| Resource | Description |
-|----------|-------------|
-| VPC | 10.0.0.0/16 with DNS support |
-| Subnet | Public subnet 10.0.1.0/24 |
-| Internet Gateway | For public internet access |
-| Security Group | Ports 22 (SSH) and 49000 (app) |
-| EC2 Instance | t3.micro with Ubuntu 24.04 LTS |
-
-The instance runs hello-world as a systemd service on port 49000.
-
-### CloudFormation Parameters
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `KeyName` | EC2 Key Pair for SSH access | _(none)_ |
-| `AllowedIP` | CIDR for SSH access | `0.0.0.0/0` |
-
-### SSH Access
-
-To enable SSH access, create a key pair first:
+Create the cluster using eksctl:
 
 ```bash
-# Create key pair and save private key
-aws ec2 create-key-pair \
-  --key-name hello-world-key \
-  --region eu-west-1 \
-  --query 'KeyMaterial' \
-  --output text > ~/.ssh/hello-world-key.pem
-
-# Set correct permissions
-chmod 600 ~/.ssh/hello-world-key.pem
+eksctl create cluster -f infra/eksctl-cluster.yaml
 ```
 
-Then deploy with the key:
+This creates:
+- EKS cluster `esade-teaching` in `eu-west-1`
+- Managed node group with 2x t3.medium instances
+- VPC with public/private subnets
+- Required add-ons (vpc-cni, coredns, kube-proxy, metrics-server)
+
+### Verify Cluster
 
 ```bash
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --parameter-overrides KeyName=hello-world-key
+# Configure kubectl
+aws eks update-kubeconfig --name esade-teaching --region eu-west-1
+
+# Verify access
+kubectl cluster-info
+kubectl get nodes
 ```
 
-Connect to the instance:
+See [infra/README.md](infra/README.md) for detailed cluster documentation.
+
+---
+
+## 2. Configure GitHub Secrets
+
+Set AWS credentials for GitHub Actions:
 
 ```bash
-# Get public IP
-IP=$(aws cloudformation describe-stacks \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --query 'Stacks[0].Outputs[?OutputKey==`PublicIP`].OutputValue' \
-  --output text)
-
-# SSH into the instance
-ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP
+gh secret set AWS_ACCESS_KEY_ID --body "your-access-key"
+gh secret set AWS_SECRET_ACCESS_KEY --body "your-secret-key"
+gh secret set AWS_SESSION_TOKEN --body "your-session-token"  # if using SSO
 ```
 
-### Manual Deployment
+---
+
+## 3. CI/CD Pipeline
+
+The release workflow (`.github/workflows/release.yml`) triggers on:
+- Push to tags matching `v*`
+- Manual dispatch (`workflow_dispatch`)
+
+### Pipeline Steps
+
+| Job | Description |
+|-----|-------------|
+| **lint** | Runs `ruff check` and `ruff format --check` |
+| **test** | Runs `pytest` |
+| **docker** | Builds and pushes image to `ghcr.io/oriolrius/hello-world` |
+| **deploy** | Deploys to EKS and verifies load balancing |
+
+### Verification
+
+The deploy job verifies:
+- All pods are running and healthy
+- Response format is correct (`hello-world from <pod-name>`)
+- Load balancer distributes traffic to multiple pods
+
+### Trigger Deployment
 
 ```bash
-# Deploy stack (without SSH)
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1
+# Create and push a tag
+git tag v6.1.0
+git push origin v6.1.0
 
-# Deploy stack (with SSH access)
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --parameter-overrides KeyName=hello-world-key
-
-# Get outputs (IP, URL)
-aws cloudformation describe-stacks \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --query 'Stacks[0].Outputs' \
-  --output table
-
-# Delete stack
-aws cloudformation delete-stack \
-  --stack-name hello-world \
-  --region eu-west-1
+# Or trigger manually
+gh workflow run release.yml
 ```
 
-### GitHub Actions Deployment
+---
 
-The `deploy.yml` workflow runs on release or manual trigger.
+## 4. Manual Kubernetes Operations
 
-**Required secrets:**
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_SESSION_TOKEN` _(if using SSO)_
+### Deploy
 
 ```bash
-# Set secrets
-gh secret set AWS_ACCESS_KEY_ID --body "your-key"
-gh secret set AWS_SECRET_ACCESS_KEY --body "your-secret"
-
-# Trigger manual deployment
-gh workflow run deploy.yml
+kubectl apply -k k8s/
+kubectl rollout status deployment/hello-world -n hello-world
 ```
+
+### Verify
+
+```bash
+# Check pods
+kubectl get pods -n hello-world -o wide
+
+# Get LoadBalancer URL
+LB=$(kubectl get svc -n hello-world hello-world -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+echo "URL: http://$LB/"
+
+# Test load balancing
+for i in {1..10}; do curl -s http://$LB/; done
+```
+
+### Scale
+
+```bash
+# Scale to 4 replicas
+kubectl scale deployment/hello-world -n hello-world --replicas=4
+
+# Scale down to 2
+kubectl scale deployment/hello-world -n hello-world --replicas=2
+```
+
+### Update Image
+
+```bash
+kubectl set image deployment/hello-world -n hello-world \
+  hello-world=ghcr.io/oriolrius/hello-world:v6.1.0
+
+kubectl rollout status deployment/hello-world -n hello-world
+```
+
+### Rollback
+
+```bash
+kubectl rollout undo deployment/hello-world -n hello-world
+```
+
+See [k8s/README.md](k8s/README.md) for detailed Kubernetes operations and failure recovery simulation.
+
+---
+
+## 5. Cleanup
+
+### Remove Application
+
+```bash
+kubectl delete -k k8s/
+```
+
+### Destroy EKS Cluster
+
+```bash
+eksctl delete cluster --name esade-teaching --region eu-west-1
+```
+
+> **Warning:** This deletes all workloads and is irreversible.
+
+---
+
+## Project Structure
+
+```
+hello-world/
+├── src/hello_world/       # Application code
+├── tests/                 # Tests
+├── docker/
+│   ├── Dockerfile         # Container image
+│   └── .dockerignore
+├── k8s/
+│   ├── namespace.yaml     # Kubernetes namespace
+│   ├── deployment.yaml    # Deployment (2 replicas, health probes)
+│   ├── service.yaml       # LoadBalancer service
+│   ├── kustomization.yaml # Kustomize config
+│   └── README.md          # K8s operations guide
+├── infra/
+│   ├── eksctl-cluster.yaml # EKS cluster definition
+│   └── README.md           # Cluster documentation
+└── .github/workflows/
+    └── release.yml        # CI/CD pipeline
+```
+
+---
+
+## Cost Estimation (EKS)
+
+| Component | Monthly Cost |
+|-----------|--------------|
+| EKS Control Plane | ~$73 |
+| 2x t3.medium nodes | ~$60 |
+| NAT Gateway | ~$33 |
+| Load Balancer | ~$18 |
+| **Total** | **~$184/month** |
+
+---
+
+## License
+
+MIT
