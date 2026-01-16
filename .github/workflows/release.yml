@@ -126,25 +126,43 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Create or use existing key pair
+      - name: Delete existing stack if present
         run: |
-          if ! aws ec2 describe-key-pairs --key-names ${{ env.KEY_NAME }} 2>/dev/null; then
-            aws ec2 create-key-pair \
-              --key-name ${{ env.KEY_NAME }} \
-              --query 'KeyMaterial' \
-              --output text > /tmp/deploy-key.pem
+          if aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} 2>/dev/null; then
+            echo "Deleting existing stack..."
+            aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}
+            echo "Waiting for stack deletion..."
+            aws cloudformation wait stack-delete-complete --stack-name ${{ env.STACK_NAME }}
+            echo "Stack deleted"
           else
-            echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/deploy-key.pem
+            echo "No existing stack found"
           fi
+
+      - name: Delete existing key pair if present
+        run: |
+          if aws ec2 describe-key-pairs --key-names ${{ env.KEY_NAME }} 2>/dev/null; then
+            echo "Deleting existing key pair..."
+            aws ec2 delete-key-pair --key-name ${{ env.KEY_NAME }}
+            echo "Key pair deleted"
+          else
+            echo "No existing key pair found"
+          fi
+
+      - name: Create new key pair
+        run: |
+          aws ec2 create-key-pair \
+            --key-name ${{ env.KEY_NAME }} \
+            --query 'KeyMaterial' \
+            --output text > /tmp/deploy-key.pem
           chmod 600 /tmp/deploy-key.pem
+          echo "New key pair created"
 
       - name: Deploy CloudFormation stack
         run: |
           aws cloudformation deploy \
             --template-file infra/cloudformation.yml \
             --stack-name ${{ env.STACK_NAME }} \
-            --parameter-overrides KeyName=${{ env.KEY_NAME }} \
-            --no-fail-on-empty-changeset
+            --parameter-overrides KeyName=${{ env.KEY_NAME }}
 
       - name: Wait for EC2 instance
         run: |
