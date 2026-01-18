@@ -234,6 +234,7 @@ eksctl delete cluster --name esade-teaching --region eu-west-1
 |----------|-------------|
 | [k8s/README.md](k8s/README.md) | Kubernetes deployment guide, scaling, failure recovery simulation, troubleshooting |
 | [infra/README.md](infra/README.md) | EKS cluster documentation, networking, add-ons, management commands |
+| [infra/ARCHITECTURE.md](infra/ARCHITECTURE.md) | Architecture diagram and detailed infrastructure component descriptions |
 
 ---
 
@@ -254,6 +255,8 @@ hello-world/
 │   └── README.md          # K8s operations guide
 ├── infra/
 │   ├── eksctl-cluster.yaml # EKS cluster definition
+│   ├── ARCHITECTURE.md     # Architecture diagram and docs
+│   ├── architecture.svg    # Infrastructure diagram
 │   └── README.md           # Cluster documentation
 └── .github/workflows/
     └── release.yml        # CI/CD pipeline
