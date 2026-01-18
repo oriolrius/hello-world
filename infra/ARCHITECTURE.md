@@ -1,24 +1,24 @@
 # EKS Architecture: esade-teaching
 
-This document describes the AWS infrastructure architecture for the `esade-teaching` EKS cluster, created from `eksctl-cluster.yaml`.
+This document describes the AWS infrastructure architecture for the `esade-teaching` EKS cluster, created from `eksctl-cluster.yaml`. Defined using Cloud Formation stacks.
 
 ## Architecture Diagram
 
 ![EKS Architecture](eks-architecture.png)
 
-> Editable version: [eks-architecture.drawio](eks-architecture.drawio) (open with [draw.io](https://app.diagrams.net/))
+> Editable version: [eks-architecture.drawio.png](eks-architecture.drawio.png) (open with [draw.io](https://app.diagrams.net/))
 
 ### Connection Color Legend
 
-| Color | Line Style | Meaning |
-|-------|------------|---------|
-| **Green** | Solid, bold | User HTTP traffic flow |
-| **Blue** | Dashed | Control plane / kubectl commands |
-| **Purple** | Solid/Dashed | CI/CD pipeline (GitHub Actions) |
-| **Orange** | Dashed | Container image pulls |
-| **Goldenrod** | Dashed | Outbound NAT traffic |
-| **Gray** | Dotted | Pod placement (runs on node) |
-| **Dark Gray** | Dotted | CloudFormation provisioning |
+| Color               | Line Style   | Meaning                          |
+| ------------------- | ------------ | -------------------------------- |
+| **Green**     | Solid, bold  | User HTTP traffic flow           |
+| **Blue**      | Dashed       | Control plane / kubectl commands |
+| **Purple**    | Solid/Dashed | CI/CD pipeline (GitHub Actions)  |
+| **Orange**    | Dashed       | Container image pulls            |
+| **Goldenrod** | Dashed       | Outbound NAT traffic             |
+| **Gray**      | Dotted       | Pod placement (runs on node)     |
+| **Dark Gray** | Dotted       | CloudFormation provisioning      |
 
 ## Overview
 
@@ -30,10 +30,10 @@ The architecture follows AWS best practices for EKS deployments with a multi-AZ 
 
 When `eksctl create cluster -f eksctl-cluster.yaml` is executed, eksctl generates and deploys two CloudFormation stacks:
 
-| Stack | Resources Created |
-|-------|-------------------|
-| `eksctl-esade-teaching-cluster` | VPC, Subnets, Internet Gateway, NAT Gateway, Route Tables, EKS Control Plane, IAM Roles, Security Groups, OIDC Provider |
-| `eksctl-esade-teaching-nodegroup-students` | EC2 Launch Template, Auto Scaling Group, Node IAM Role, Node Security Group |
+| Stack                                        | Resources Created                                                                                                       |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `eksctl-esade-teaching-cluster`            | VPC, Subnets, Internet Gateway, NAT Gateway, Route Tables, EKS Control Plane, IAM Roles, Security Groups, OIDC Provider |
+| `eksctl-esade-teaching-nodegroup-students` | EC2 Launch Template, Auto Scaling Group, Node IAM Role, Node Security Group                                             |
 
 ### VPC Architecture
 
@@ -51,42 +51,44 @@ VPC CIDR: 192.168.0.0/16
 ```
 
 **Design Rationale:**
+
 - **3 Availability Zones**: High availability across `eu-west-1a`, `eu-west-1b`, `eu-west-1c`
 - **Public Subnets**: Host the Internet Gateway, NAT Gateway, and Load Balancers
 - **Private Subnets**: Host worker nodes (no direct internet access for security)
 
 ### Network Components
 
-| Component | Purpose | Location |
-|-----------|---------|----------|
-| **Internet Gateway** | Enables internet access for public subnets | VPC level |
-| **NAT Gateway** | Enables outbound internet access for private subnets (image pulls, updates) | Public subnet |
-| **Route Tables** | Direct traffic: public → IGW, private → NAT | Per subnet type |
+| Component                  | Purpose                                                                     | Location        |
+| -------------------------- | --------------------------------------------------------------------------- | --------------- |
+| **Internet Gateway** | Enables internet access for public subnets                                  | VPC level       |
+| **NAT Gateway**      | Enables outbound internet access for private subnets (image pulls, updates) | Public subnet   |
+| **Route Tables**     | Direct traffic: public → IGW, private → NAT                               | Per subnet type |
 
 ### EKS Control Plane
 
 The EKS control plane is **fully managed by AWS**:
 
-- **High Availability**: Runs across multiple AZs
-- **Automatic Scaling**: AWS manages capacity
-- **Automatic Updates**: Security patches applied automatically
+- **High Availability**: Runs across multiple AZs (Availability Zones).
+- **Automatic Scaling**: AWS manages capacity.
+- **Automatic Updates**: Security patches applied automatically.
 - **API Endpoint**: `https://<cluster-id>.gr7.eu-west-1.eks.amazonaws.com`
 
 You only pay for the control plane (~$73/month), not the underlying infrastructure.
 
 ### Managed Node Group: students
 
-| Property | Value |
-|----------|-------|
-| Instance Type | t3.medium (2 vCPU, 4 GB RAM) |
-| AMI | Amazon Linux 2023 |
-| Container Runtime | containerd 2.1.5 |
-| Desired Capacity | 2 nodes |
-| Min/Max | 1-3 nodes (Auto Scaling) |
-| Volume | 20 GB gp3 |
-| Subnet Placement | Private subnets |
+| Property          | Value                        |
+| ----------------- | ---------------------------- |
+| Instance Type     | t3.medium (2 vCPU, 4 GB RAM) |
+| AMI               | Amazon Linux 2023            |
+| Container Runtime | containerd 2.1.5             |
+| Desired Capacity  | 2 nodes                      |
+| Min/Max           | 1-3 nodes (Auto Scaling)     |
+| Volume            | 20 GB gp3                    |
+| Subnet Placement  | Private subnets              |
 
 **Managed Node Group Benefits:**
+
 - AWS handles node provisioning, updates, and termination
 - Integrated with EKS for seamless Kubernetes updates
 - Auto Scaling Group manages capacity based on demand
@@ -95,12 +97,12 @@ You only pay for the control plane (~$73/month), not the underlying infrastructu
 
 Add-ons are Kubernetes components managed by AWS:
 
-| Add-on | Version | Purpose |
-|--------|---------|---------|
-| **vpc-cni** | v1.20.4 | AWS VPC CNI for pod networking (assigns VPC IPs to pods) |
-| **kube-proxy** | v1.32.6 | Kubernetes service proxy (iptables rules) |
-| **CoreDNS** | v1.11.4 | Cluster DNS resolution |
-| **metrics-server** | v0.8.0 | Resource metrics for HPA and `kubectl top` |
+| Add-on                   | Version | Purpose                                                  |
+| ------------------------ | ------- | -------------------------------------------------------- |
+| **vpc-cni**        | v1.20.4 | AWS VPC CNI for pod networking (assigns VPC IPs to pods) |
+| **kube-proxy**     | v1.32.6 | Kubernetes service proxy (iptables rules)                |
+| **CoreDNS**        | v1.11.4 | Cluster DNS resolution                                   |
+| **metrics-server** | v0.8.0  | Resource metrics for HPA and `kubectl top`             |
 
 ### Application Layer
 
@@ -156,29 +158,29 @@ kubectl → EKS API Endpoint → Control Plane → kubelet (on nodes)
 
 ### Network Security
 
-| Layer | Security Control |
-|-------|-----------------|
-| VPC | Private subnets for workloads |
-| Subnets | NACL rules (default allow) |
-| Nodes | Security Groups (EKS-managed) |
-| Pods | Network Policies (optional) |
+| Layer   | Security Control              |
+| ------- | ----------------------------- |
+| VPC     | Private subnets for workloads |
+| Subnets | NACL rules (default allow)    |
+| Nodes   | Security Groups (EKS-managed) |
+| Pods    | Network Policies (optional)   |
 
 ### IAM Roles
 
-| Role | Purpose |
-|------|---------|
-| Cluster Role | EKS control plane permissions |
-| Node Role | EC2 instances permissions (ECR, EBS, etc.) |
-| Pod Roles | IRSA for pod-level AWS access (not configured) |
+| Role         | Purpose                                        |
+| ------------ | ---------------------------------------------- |
+| Cluster Role | EKS control plane permissions                  |
+| Node Role    | EC2 instances permissions (ECR, EBS, etc.)     |
+| Pod Roles    | IRSA for pod-level AWS access (not configured) |
 
 ### Current Security Posture
 
-| Feature | Status | Production Recommendation |
-|---------|--------|--------------------------|
-| API Endpoint | Public | Enable private endpoint |
-| OIDC Provider | Disabled | Enable for IRSA |
-| CloudWatch Logging | Disabled | Enable audit logs |
-| Secrets Encryption | Default | Enable KMS encryption |
+| Feature            | Status   | Production Recommendation |
+| ------------------ | -------- | ------------------------- |
+| API Endpoint       | Public   | Enable private endpoint   |
+| OIDC Provider      | Disabled | Enable for IRSA           |
+| CloudWatch Logging | Disabled | Enable audit logs         |
+| Secrets Encryption | Default  | Enable KMS encryption     |
 
 ## Scaling
 
@@ -220,18 +222,26 @@ spec:
 
 ## Cost Breakdown
 
-| Component | Monthly Cost | Notes |
-|-----------|--------------|-------|
-| EKS Control Plane | ~$73 | Fixed cost |
-| 2x t3.medium | ~$60 | On-demand pricing |
-| NAT Gateway | ~$33 | Data processing + hourly |
-| EBS (40 GB gp3) | ~$4 | 2 nodes × 20 GB |
-| ELB | ~$18 | Classic LB + data |
-| **Total** | **~$188/month** | |
+| Component         | Monthly Cost          | Notes                    |
+| ----------------- | --------------------- | ------------------------ |
+| EKS Control Plane | ~$73                  | Fixed cost               |
+| 2x t3.medium      | ~$60                  | On-demand pricing        |
+| NAT Gateway       | ~$33                  | Data processing + hourly |
+| EBS (40 GB gp3)   | ~$4                   | 2 nodes × 20 GB         |
+| ELB               | ~$18                  | Classic LB + data        |
+| **Total**   | **~$188/month** |                          |
 
 ## Diagram Source
 
-The architecture diagram is generated using the Python `diagrams` library with proper AWS/K8s icons:
+The architecture diagram was created using [draw.io](https://app.diagrams.net/) with AWS architecture icons.
+
+**Source files:**
+- `eks-architecture.drawio.png` - Exported diagram (editable in draw.io)
+- `eks-architecture.png` - PNG version for documentation
+
+**Base generation (optional):**
+
+The initial diagram structure can be generated using the Python `diagrams` library:
 
 ```bash
 cd tools
@@ -239,26 +249,7 @@ source .venv/bin/activate
 python generate_eks_diagram.py
 ```
 
-To regenerate the editable `.drawio` version:
-
-```bash
-graphviz2drawio ../infra/eks-architecture.dot -o ../infra/eks-architecture.drawio
-
-# Fix edges to be rounded
-python3 -c "
-import re
-with open('../infra/eks-architecture.drawio', 'r') as f:
-    content = f.read()
-def fix_edges(match):
-    line = match.group(0)
-    if 'edge=\"1\"' in line:
-        return line.replace('rounded=0', 'rounded=1')
-    return line
-result = re.sub(r'<mxCell[^>]*>', fix_edges, content)
-with open('../infra/eks-architecture.drawio', 'w') as f:
-    f.write(result)
-"
-```
+This produces a `.dot` file that can be converted to `.drawio` format using `graphviz2drawio`, then manually refined in draw.io for better layout and readability.
 
 ## References
 

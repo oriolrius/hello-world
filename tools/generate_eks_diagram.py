@@ -20,8 +20,10 @@ from diagrams.onprem.container import Docker
 graph_attr = {
     "fontsize": "14",
     "bgcolor": "white",
-    "pad": "0.5",
+    "pad": "1.0",
     "splines": "ortho",
+    "nodesep": "1.0",
+    "ranksep": "1.2",
 }
 
 with Diagram(
@@ -40,10 +42,13 @@ with Diagram(
 
     with Cluster("AWS Cloud (eu-west-1)"):
 
-        # CloudFormation stacks
-        with Cluster("CloudFormation Stacks\n─────────────────────────────────────────\nfile: eksctl-cluster.yaml\nautomates deployment of managed K8s cluster"):
+        # CloudFormation stacks (vertical layout)
+        with Cluster("CloudFormation Stacks\n─────────────────────────────────────────\nfile: eksctl-cluster.yaml\nautomates deployment of managed K8s cluster",
+                     graph_attr={"rankdir": "TB"}):
             cfn_cluster = Cloudformation("eksctl-esade-teaching-cluster\n─────────────\nVPC, Control Plane\nIAM Roles, OIDC")
             cfn_nodegroup = Cloudformation("eksctl-esade-teaching-nodegroup-students\n─────────────\nEC2, Auto Scaling Group\nLaunch Template")
+            # Force vertical layout
+            cfn_cluster - Edge(style="invis") - cfn_nodegroup
 
         # EKS Control Plane (AWS Managed)
         eks_control = EKS("EKS Control Plane\n─────────────\nesade-teaching (K8s 1.32)\nAWS-managed API server")
