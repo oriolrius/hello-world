@@ -4,18 +4,21 @@ This document describes the AWS infrastructure architecture for the `esade-teach
 
 ## Architecture Diagram
 
-![EKS Architecture](architecture.svg)
+![EKS Architecture](eks-architecture.png)
+
+> Editable version: [eks-architecture.drawio](eks-architecture.drawio) (open with [draw.io](https://app.diagrams.net/))
 
 ### Connection Color Legend
 
 | Color | Line Style | Meaning |
 |-------|------------|---------|
-| **Green** | Solid, thick | User HTTP traffic flow |
+| **Green** | Solid, bold | User HTTP traffic flow |
 | **Blue** | Dashed | Control plane / kubectl commands |
 | **Purple** | Solid/Dashed | CI/CD pipeline (GitHub Actions) |
 | **Orange** | Dashed | Container image pulls |
-| **Amber** | Dashed | Outbound NAT traffic |
-| **Gray** | Dotted | Infrastructure provisioning / Pod placement |
+| **Goldenrod** | Dashed | Outbound NAT traffic |
+| **Gray** | Dotted | Pod placement (runs on node) |
+| **Dark Gray** | Dotted | CloudFormation provisioning |
 
 ## Overview
 
@@ -228,16 +231,32 @@ spec:
 
 ## Diagram Source
 
-The architecture diagram is generated from `architecture.dot` using GraphViz:
+The architecture diagram is generated using the Python `diagrams` library with proper AWS/K8s icons:
 
 ```bash
-# Regenerate SVG
-pip install graphviz
+cd tools
+source .venv/bin/activate
+python generate_eks_diagram.py
+```
+
+To regenerate the editable `.drawio` version:
+
+```bash
+graphviz2drawio ../infra/eks-architecture.dot -o ../infra/eks-architecture.drawio
+
+# Fix edges to be rounded
 python3 -c "
-import graphviz
-with open('architecture.dot', 'r') as f:
-    source = graphviz.Source(f.read())
-    source.render('architecture', format='svg', cleanup=True)
+import re
+with open('../infra/eks-architecture.drawio', 'r') as f:
+    content = f.read()
+def fix_edges(match):
+    line = match.group(0)
+    if 'edge=\"1\"' in line:
+        return line.replace('rounded=0', 'rounded=1')
+    return line
+result = re.sub(r'<mxCell[^>]*>', fix_edges, content)
+with open('../infra/eks-architecture.drawio', 'w') as f:
+    f.write(result)
 "
 ```
 

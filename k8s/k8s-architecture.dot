@@ -1,0 +1,171 @@
+digraph "Hello World - Kubernetes Architecture" {
+	graph [bb="0,0,602,741",
+		bgcolor=white,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=14,
+		label="Hello World - Kubernetes Architecture",
+		lheight=0.21,
+		lp="301,11.5",
+		lwidth=3.61,
+		nodesep=0.60,
+		pad=0.5,
+		rankdir=LR,
+		ranksep=0.75,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#7B8894"];
+	subgraph "cluster_Kubernetes Cluster" {
+		graph [bb="173,197,602,733",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="Kubernetes Cluster",
+			labeljust=l,
+			lheight=0.18,
+			lp="238,722.5",
+			lwidth=1.58,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		subgraph "cluster_Namespace: hello-world" {
+			graph [bb="181,205,594,704",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="Namespace: hello-world",
+				labeljust=l,
+				lheight=0.18,
+				lp="261.5,693.5",
+				lwidth=2.01,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			subgraph "cluster_Deployment: hello-world
+(replicas: 2)" {
+				graph [bb="423,213,586,675",
+					bgcolor="#ECE8F6",
+					fontname="Sans-Serif",
+					fontsize=12,
+					label="Deployment: hello-world
+(replicas: 2)",
+					labeljust=l,
+					lheight=0.36,
+					lp="504.5,658",
+					lwidth=2.04,
+					pencolor="#AEB6BE",
+					rankdir=LR,
+					shape=box,
+					style=rounded
+				];
+				subgraph cluster_ReplicaSet {
+					graph [bb="446,221,563,633",
+						bgcolor="#FDF7E3",
+						fontname="Sans-Serif",
+						fontsize=12,
+						label=ReplicaSet,
+						labeljust=l,
+						lheight=0.18,
+						lp="485.5,622.5",
+						lwidth=0.88,
+						pencolor="#AEB6BE",
+						rankdir=LR,
+						shape=box,
+						style=rounded
+					];
+					cfaa52733d3340daae116d9058a9ce2f	[height=2.3056,
+						image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/k8s/compute/pod.png",
+						label="Pod 1
+:49000",
+						pos="504.5,521",
+						shape=none,
+						width=1.4028];
+					"590dbf6970a64551ac13f863fb1cc1bb"	[height=2.3056,
+						image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/k8s/compute/pod.png",
+						label="Pod 2
+:49000",
+						pos="504.5,312",
+						shape=none,
+						width=1.4028];
+				}
+			}
+			e9fbca949c424f179a0d10482dd76a22	[height=2.6944,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/k8s/network/svc.png",
+				label="Service
+hello-world
+(LoadBalancer)",
+				pos="239.5,417",
+				shape=none,
+				width=1.4028];
+			e9fbca949c424f179a0d10482dd76a22 -> cfaa52733d3340daae116d9058a9ce2f	[color=green,
+				dir=forward,
+				fontcolor="#2D3436",
+				fontname="Sans-Serif",
+				fontsize=13,
+				label=":80→:49000",
+				lp="356.5,488",
+				pos="e,453.89,488.67 290.28,488.67 290.28,488.67 443.89,488.67 443.89,488.67"];
+			e9fbca949c424f179a0d10482dd76a22 -> "590dbf6970a64551ac13f863fb1cc1bb"	[color=green,
+				dir=forward,
+				fontcolor="#2D3436",
+				fontname="Sans-Serif",
+				fontsize=13,
+				pos="e,453.89,357.5 290.28,357.5 290.28,357.5 443.89,357.5 443.89,357.5"];
+		}
+	}
+	b61801906e35430fa05831e28f8955df	[height=2.3056,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/client/users.png",
+		label="Users
+(HTTP :80)",
+		pos="50.5,417",
+		shape=none,
+		width=1.4028];
+	b61801906e35430fa05831e28f8955df -> e9fbca949c424f179a0d10482dd76a22	[color=green,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=HTTP,
+		lp="145,424",
+		pos="e,188.71,417 101.15,417 101.15,417 178.71,417 178.71,417",
+		style=bold];
+	f7b9eec9314b4037a913e9fa6c504f73	[height=2.3056,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/container/docker.png",
+		label="ghcr.io
+oriolrius/hello-world",
+		pos="239.5,106",
+		shape=none,
+		width=1.4028];
+	f7b9eec9314b4037a913e9fa6c504f73 -> cfaa52733d3340daae116d9058a9ce2f	[color=orange,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label="pull image",
+		lp="356.5,270",
+		pos="e,453.65,463.33 290.35,106 327.71,106 372,106 372,106 372,106 372,463.33 372,463.33 372,463.33 443.65,463.33 443.65,463.33",
+		style=dashed];
+	f7b9eec9314b4037a913e9fa6c504f73 -> "590dbf6970a64551ac13f863fb1cc1bb"	[color=orange,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		pos="e,453.81,274.5 240,189.26 240,231.71 240,274.5 240,274.5 240,274.5 443.81,274.5 443.81,274.5",
+		style=dashed];
+}
