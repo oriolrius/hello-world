@@ -59,48 +59,17 @@ This section explains how credentials are captured, stored, and used throughout 
 
 ### Overview Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           GitHub Actions Runner                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐  │
-│  │  GitHub Secrets  │      │   AWS CLI        │      │  /tmp/deploy-    │  │
-│  │                  │─────▶│   Environment    │      │  key.pem         │  │
-│  │ AWS_ACCESS_KEY_ID│      │                  │      │                  │  │
-│  │ AWS_SECRET_...   │      │ AWS_ACCESS_KEY_ID│      │  (SSH private    │  │
-│  │ AWS_SESSION_TOKEN│      │ AWS_SECRET_...   │      │   key file)      │  │
-│  │ EC2_SSH_KEY      │─────▶│ AWS_REGION       │      │                  │  │
-│  └──────────────────┘      └────────┬─────────┘      └────────▲─────────┘  │
-│                                     │                         │             │
-│                                     ▼                         │             │
-│                          ┌──────────────────┐                 │             │
-│                          │  CloudFormation  │                 │             │
-│                          │  (creates EC2    │                 │             │
-│                          │   with KeyName)  │                 │             │
-│                          └────────┬─────────┘                 │             │
-│                                   │                           │             │
-│                                   ▼                           │             │
-│                          ┌──────────────────┐                 │             │
-│                          │  Get EC2 IP from │                 │             │
-│                          │  Stack Outputs   │                 │             │
-│                          └────────┬─────────┘                 │             │
-│                                   │                           │             │
-│                                   ▼                           │             │
-│                          ┌──────────────────┐                 │             │
-│                          │ Create Ansible   │                 │             │
-│                          │ inventory.ini    │─────────────────┘             │
-│                          │ (IP + key path)  │                               │
-│                          └────────┬─────────┘                               │
-│                                   │                                         │
-│                                   ▼                                         │
-│                          ┌──────────────────┐      ┌──────────────────┐    │
-│                          │ Ansible Playbook │─────▶│   EC2 Instance   │    │
-│                          │ (SSH via key)    │ SSH  │   (Ubuntu 24.04) │    │
-│                          └──────────────────┘      └──────────────────┘    │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+![Credentials Flow](docs/credentials-flow.png)
+
+**Connection Color Legend:**
+
+| Color  | Description                              |
+|--------|------------------------------------------|
+| Blue   | AWS credentials flow                     |
+| Orange | SSH private key flow                     |
+| Green  | EC2 IP address from CloudFormation       |
+| Purple | Combined inventory (IP + key path)       |
+| Red    | SSH connection to EC2                    |
 
 ### Step 1: AWS Credentials Configuration
 
