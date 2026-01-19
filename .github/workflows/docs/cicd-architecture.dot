@@ -1,0 +1,325 @@
+digraph "GitHub Actions CI/CD Pipeline (v3.0.x)" {
+	graph [bb="0,0,393,2435",
+		bgcolor=white,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=14,
+		label="GitHub Actions CI/CD Pipeline (v3.0.x)",
+		lheight=0.21,
+		lp="196.5,11.5",
+		lwidth=3.67,
+		nodesep=0.8,
+		pad=1.0,
+		rankdir=TB,
+		ranksep=1.0,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#7B8894"];
+	subgraph cluster_GitHub {
+		graph [bb="105,1952,223,2183",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label=GitHub,
+			labeljust=l,
+			lheight=0.18,
+			lp="133.5,2172.5",
+			lwidth=0.57,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		"20dc6b0eb14c4e4b8594930d94b47511"	[height=2.6944,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/vcs/github.png",
+			label="Repository
+─────────────
+oriolrius/hello-world",
+			pos="164,2057",
+			shape=none,
+			width=1.4028];
+	}
+	subgraph "cluster_GitHub Actions - release.yml
+─────────────────────────────────────────
+\
+Triggered by: push tags v*" {
+		graph [bb="8,920,332,1902",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="GitHub Actions - release.yml
+─────────────────────────────────────────
+\
+Triggered by: push tags v*",
+			labeljust=l,
+			lheight=0.54,
+			lp="170,1878.5",
+			lwidth=4.28,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		subgraph "cluster_Stage 1: Quality Gates
+(parallel)" {
+			graph [bb="16,1574,293,1847",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="Stage 1: Quality Gates
+(parallel)",
+				labeljust=l,
+				lheight=0.36,
+				lp="91,1830",
+				lwidth=1.86,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			fb88ac0073f5446fa95f3082115922a1	[height=3.0972,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+				label="Lint
+─────────────
+ruff check
+ruff format",
+				pos="75,1693.5",
+				shape=none,
+				width=1.4028];
+			"327026ce471541f7a979fde80b63c9ea"	[height=2.6944,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+				label="Test
+─────────────
+pytest -v",
+				pos="234,1693.5",
+				shape=none,
+				width=1.4028];
+		}
+		subgraph "cluster_Stage 2: Build
+(after Stage 1)" {
+			graph [bb="65,1251,183,1524",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="Stage 2: Build
+(after Stage 1)",
+				labeljust=l,
+				lheight=0.36,
+				lp="117,1507",
+				lwidth=1.22,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			"013edaac198a451e8551e6d302cdb2f5"	[height=3.0972,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+				label="Build
+─────────────
+uv build
+upload artifact",
+				pos="124,1370.5",
+				shape=none,
+				width=1.4028];
+		}
+		subgraph "cluster_Stage 3: Release
+(after Build)" {
+			graph [bb="65,928,183,1201",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="Stage 3: Release
+(after Build)",
+				labeljust=l,
+				lheight=0.36,
+				lp="123,1184",
+				lwidth=1.39,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			"23421b9aef6e4c97aad652564d213823"	[height=3.0972,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+				label="Release
+─────────────
+GitHub Release
+attach dist/*",
+				pos="124,1047.5",
+				shape=none,
+				width=1.4028];
+		}
+		fb88ac0073f5446fa95f3082115922a1 -> "013edaac198a451e8551e6d302cdb2f5"	[color=purple,
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			label=pass,
+			lp="114.5,1539",
+			pos="e,99.5,1482.1 99.5,1581.9 99.5,1581.9 99.5,1492.1 99.5,1492.1",
+			style=dashed];
+		"327026ce471541f7a979fde80b63c9ea" -> "013edaac198a451e8551e6d302cdb2f5"	[color=purple,
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			pos="e,150,1482.4 183.2,1693 165.51,1693 150,1693 150,1693 150,1693 150,1492.4 150,1492.4",
+			style=dashed];
+		"013edaac198a451e8551e6d302cdb2f5" -> "23421b9aef6e4c97aad652564d213823"	[color=purple,
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			label=artifact,
+			lp="148.5,1216",
+			pos="e,124,1159.1 124,1258.9 124,1258.9 124,1169.1 124,1169.1",
+			style=dashed];
+	}
+	subgraph "cluster_GitHub Actions - deploy.yml
+─────────────────────────────────────────
+\
+Triggered by: release published / manual" {
+		graph [bb="61,592,385,878",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="GitHub Actions - deploy.yml
+─────────────────────────────────────────
+\
+Triggered by: release published / manual",
+			labeljust=l,
+			lheight=0.54,
+			lp="223,854.5",
+			lwidth=4.28,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		"1a0f9c7db4d34195b312c2012021638b"	[height=3.0972,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+			label="Deploy
+─────────────
+aws cloudformation
+deploy",
+			pos="124,711.5",
+			shape=none,
+			width=1.4028];
+	}
+	subgraph "cluster_AWS (eu-west-1)" {
+		graph [bb="62,31,186,542",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="AWS (eu-west-1)",
+			labeljust=l,
+			lheight=0.18,
+			lp="120,531.5",
+			lwidth=1.39,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		"1c8d05252a3f4859bf158c6af1fb2b38"	[height=2.6944,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/management/cloudformation.png",
+			label="CloudFormation
+─────────────
+hello-world stack",
+			pos="124,416",
+			shape=none,
+			width=1.4028];
+		ffb56082318b403ab7cc95f0e1fa6e0e	[height=2.6944,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/compute/ec2.png",
+			label="EC2 Instance
+─────────────
+Application",
+			pos="127,136",
+			shape=none,
+			width=1.4028];
+		"1c8d05252a3f4859bf158c6af1fb2b38" -> ffb56082318b403ab7cc95f0e1fa6e0e	[color=gray,
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			label=creates,
+			lp="153,276",
+			pos="e,125.5,233.45 125.5,318.86 125.5,318.86 125.5,243.45 125.5,243.45",
+			style=dotted];
+	}
+	"64a8ce9784e745b99b51d64b2c76a18e"	[height=2.6944,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/general/users.png",
+		label="Developer
+─────────────
+git push tag v*",
+		pos="164,2338",
+		shape=none,
+		width=1.4028];
+	"64a8ce9784e745b99b51d64b2c76a18e" -> "20dc6b0eb14c4e4b8594930d94b47511"	[color=blue,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label="push tag",
+		lp="193,2198",
+		pos="e,164,2154.1 164,2240.9 164,2240.9 164,2164.1 164,2164.1"];
+	"20dc6b0eb14c4e4b8594930d94b47511" -> fb88ac0073f5446fa95f3082115922a1	[color=purple,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=trigger,
+		lp="136.5,1917",
+		pos="e,119.5,1805 119.5,1959.6 119.5,1959.6 119.5,1815 119.5,1815"];
+	"20dc6b0eb14c4e4b8594930d94b47511" -> "327026ce471541f7a979fde80b63c9ea"	[color=purple,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		pos="e,199,1790.5 199,1959.6 199,1959.6 199,1800.5 199,1800.5"];
+	"23421b9aef6e4c97aad652564d213823" -> "1a0f9c7db4d34195b312c2012021638b"	[color=green,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=published,
+		lp="156,893",
+		pos="e,124,823.18 124,935.62 124,935.62 124,833.18 124,833.18"];
+	"1a0f9c7db4d34195b312c2012021638b" -> "1c8d05252a3f4859bf158c6af1fb2b38"	[color=green,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=deploy,
+		lp="146.5,557",
+		pos="e,124,513.35 124,599.78 124,599.78 124,523.35 124,523.35"];
+	ba4b55c57ba24054aaaf4b5216b8ec19	[height=2.6944,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/general/users.png",
+		label="End Users
+─────────────
+HTTP requests",
+		pos="283,416",
+		shape=none,
+		width=1.4028];
+	ba4b55c57ba24054aaaf4b5216b8ec19 -> ffb56082318b403ab7cc95f0e1fa6e0e	[color=orange,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=HTTP,
+		lp="300,276",
+		pos="e,177.65,135 283,318.9 283,237.68 283,135 283,135 283,135 187.65,135 187.65,135",
+		style=bold];
+}
