@@ -161,13 +161,43 @@ aws cloudformation deploy \
 
 ### Stack Outputs
 
-After deployment, get the service URL:
+After deployment, get all stack outputs:
 
 ```bash
 aws cloudformation describe-stacks \
   --stack-name hello-world \
   --query 'Stacks[0].Outputs' \
   --output table
+```
+
+Get just the service URL:
+
+```bash
+aws cloudformation describe-stacks \
+  --stack-name hello-world \
+  --query 'Stacks[0].Outputs[?OutputKey==`ServiceURL`].OutputValue' \
+  --output text
+```
+
+### Test Your Deployment
+
+The EC2 instance needs 1-2 minutes to initialize after stack creation. Then test with:
+
+```bash
+# Get the URL and test
+URL=$(aws cloudformation describe-stacks \
+  --stack-name hello-world \
+  --query 'Stacks[0].Outputs[?OutputKey==`ServiceURL`].OutputValue' \
+  --output text)
+
+curl $URL
+```
+
+Or open the URL directly in your browser:
+
+```bash
+echo $URL
+# Example output: http://54.123.45.67:49000
 ```
 
 ### Destroy Stack
