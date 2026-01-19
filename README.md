@@ -1,6 +1,59 @@
 # hello-world
 
-Simple web server that returns `hello-world from <hostname>`, useful for demonstrating Kubernetes load balancing.
+A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world from \<hostname\>" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
+
+## What This Version Demonstrates (v6.x)
+
+This version introduces **Container Orchestration** with Kubernetes on Amazon EKS, enabling horizontal scaling, self-healing, and declarative infrastructure:
+
+| Practice | Implementation |
+|----------|----------------|
+| Container Orchestration | **Kubernetes (EKS)** |
+| Infrastructure as Code | eksctl cluster definition |
+| Declarative Deployment | Kubernetes manifests (YAML) |
+| Service Discovery | Kubernetes Service + AWS ELB |
+| Scaling | Horizontal Pod Autoscaling ready |
+| Self-Healing | Liveness/readiness probes |
+
+### Evolution from v5.x
+
+- **v5.x**: Docker Compose on a single EC2 instance — one container, one host
+- **v6.x**: **Kubernetes on EKS** — multiple pods across multiple nodes, load balanced
+
+```
+v5.x: EC2 → Docker Compose → 1 container
+v6.x: EKS → Kubernetes → N pods across M nodes → LoadBalancer
+```
+
+### Why Kubernetes?
+
+| Challenge | v5.x (Docker Compose) | v6.x (Kubernetes) |
+|-----------|----------------------|-------------------|
+| Scaling | Manual, single host | `kubectl scale --replicas=N` |
+| High Availability | None (single point of failure) | Pods across nodes |
+| Load Balancing | Manual (nginx) | Built-in (Service) |
+| Self-Healing | Docker restart policy | Pod auto-restart + rescheduling |
+| Rollback | Manual image tag change | `kubectl rollout undo` |
+| Resource Limits | Manual | Declarative (requests/limits) |
+
+**Key learning**: Kubernetes abstracts away individual servers, letting you think in terms of "desired state" rather than "these specific machines."
+
+### The Hostname Feature
+
+Notice the app now returns `hello-world from <hostname>`. This isn't just a code change — it demonstrates **load balancing verification**:
+
+```bash
+# Test load balancing across pods
+for i in {1..10}; do curl -s http://$LB/; done
+# hello-world from hello-world-abc123
+# hello-world from hello-world-xyz789
+# hello-world from hello-world-abc123
+# ...
+```
+
+Different responses prove traffic is distributed across multiple pods.
+
+---
 
 ## Quick Start
 
