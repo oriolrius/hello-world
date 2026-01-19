@@ -1,6 +1,73 @@
 # hello-world
 
-Simple web server that returns `hello-world`.
+A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
+
+## What This Version Demonstrates (v4.x)
+
+This version introduces **Configuration Management** with Ansible, separating infrastructure provisioning from application deployment:
+
+| Practice | Implementation |
+|----------|----------------|
+| Infrastructure as Code | AWS CloudFormation (unchanged from v3.x) |
+| Configuration Management | **Ansible playbooks** |
+| Separation of Concerns | CloudFormation = infrastructure, Ansible = app config |
+| Idempotent Deployments | Ansible tasks can run multiple times safely |
+| Reusable Configuration | Playbooks work on any Ubuntu server |
+
+### Evolution from v3.x
+
+- **v3.x**: CloudFormation UserData script runs once at instance launch — updating requires destroying and recreating
+- **v4.x**: **Ansible playbooks** can be re-run anytime to update the application without touching infrastructure
+
+```
+v3.x: CloudFormation deploys EC2 + installs app (one-time, coupled)
+v4.x: CloudFormation deploys EC2, then Ansible installs app (separate, repeatable)
+```
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              GitHub Actions                                  │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                         Deploy Workflow                                 ││
+│  │                                                                         ││
+│  │  ┌─────────────────┐        ┌─────────────────┐        ┌─────────────┐ ││
+│  │  │  CloudFormation │───────▶│  Get EC2 IP     │───────▶│   Ansible   │ ││
+│  │  │  (infra only)   │        │  from Outputs   │        │  Playbook   │ ││
+│  │  └─────────────────┘        └─────────────────┘        └──────┬──────┘ ││
+│  │                                                                │        ││
+│  └────────────────────────────────────────────────────────────────┼────────┘│
+│                                                                   │ SSH     │
+│  ┌────────────────────────────────────────────────────────────────▼────────┐│
+│  │                           EC2 Instance                                  ││
+│  │  Ansible installs:                                                      ││
+│  │  1. curl (apt)                                                          ││
+│  │  2. uv (astral.sh)                                                      ││
+│  │  3. hello-world (uv tool)                                               ││
+│  │  4. systemd service                                                     ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Differences from v3.x
+
+| Aspect | v3.x (UserData) | v4.x (Ansible) |
+|--------|-----------------|----------------|
+| When it runs | Once at launch | Anytime on demand |
+| Update app | Destroy/recreate stack | Re-run playbook |
+| Idempotent | No | Yes |
+| Testable locally | No | Yes (Vagrant, Docker) |
+| Reusable | No | Yes (any Ubuntu host) |
+
+**Key learning**: Separating infrastructure (what exists) from configuration (how it's set up) enables faster iterations and safer updates.
+
+### Why Ansible?
+
+1. **Idempotent**: Running the playbook twice produces the same result
+2. **Declarative**: Describe desired state, not steps
+3. **Agentless**: Only needs SSH access, no agent on target
+4. **Human-readable**: YAML-based, easy to review
 
 ## Installation
 
