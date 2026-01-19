@@ -1,6 +1,6 @@
 # hello-world
 
-Simple web server that returns `hello-world`.
+A lightweight web server that returns `hello-world`. Perfect for testing and learning purposes.
 
 ## Installation
 
@@ -32,7 +32,7 @@ uvx --from git+https://github.com/oriolrius/hello-world hello-world
 
 ```bash
 uv build
-uvx --from ./dist/hello_world-0.1.0-py3-none-any.whl hello-world
+uvx --from ./dist/hello_world-2.0.1-py3-none-any.whl hello-world
 ```
 
 ## Parameters
