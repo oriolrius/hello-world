@@ -1,0 +1,223 @@
+digraph "CloudFormation Infrastructure (v3.0.x)" {
+	graph [bb="0,0,515,1082",
+		bgcolor=white,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=14,
+		label="CloudFormation Infrastructure (v3.0.x)",
+		lheight=0.21,
+		lp="257.5,11.5",
+		lwidth=3.72,
+		nodesep=1.0,
+		pad=1.0,
+		rankdir=TB,
+		ranksep=1.2,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#7B8894"];
+	subgraph "cluster_AWS Cloud (eu-west-1)
+─────────────────────────────────────────
+\
+Deployed via CloudFormation" {
+		graph [bb="42.5,31,398.5,794",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="AWS Cloud (eu-west-1)
+─────────────────────────────────────────
+\
+Deployed via CloudFormation",
+			labeljust=l,
+			lheight=0.54,
+			lp="204.5,770.5",
+			lwidth=4.28,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		subgraph "cluster_VPC: 10.0.0.0/16
+─────────────────────────────────────────
+\
+hello-world-vpc" {
+			graph [bb="50.5,39,390.5,739",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="VPC: 10.0.0.0/16
+─────────────────────────────────────────
+\
+hello-world-vpc",
+				labeljust=l,
+				lheight=0.54,
+				lp="212.5,715.5",
+				lwidth=4.28,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			subgraph "cluster_Public Subnet: 10.0.1.0/24
+─────────────────────────────────────────
+\
+hello-world-subnet (AZ-a)" {
+				graph [bb="58.5,47,382.5,438",
+					bgcolor="#ECE8F6",
+					fontname="Sans-Serif",
+					fontsize=12,
+					label="Public Subnet: 10.0.1.0/24
+─────────────────────────────────────────
+\
+hello-world-subnet (AZ-a)",
+					labeljust=l,
+					lheight=0.54,
+					lp="220.5,414.5",
+					lwidth=4.28,
+					pencolor="#AEB6BE",
+					rankdir=LR,
+					shape=box,
+					style=rounded
+				];
+				subgraph "cluster_Security Group
+─────────────
+hello-world-sg
+Inbound: 22, 49000" {
+					graph [bb="225.5,55,358.5,383",
+						bgcolor="#FDF7E3",
+						fontname="Sans-Serif",
+						fontsize=12,
+						label="Security Group
+─────────────
+hello-world-sg
+Inbound: 22, 49000",
+						labeljust=l,
+						lheight=0.72,
+						lp="292,353",
+						lwidth=1.62,
+						pencolor="#AEB6BE",
+						rankdir=LR,
+						shape=box,
+						style=rounded
+					];
+					"3e305bea0f194424ba0f3204309df39f"	[height=3.5,
+						image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/compute/ec2.png",
+						label="EC2 Instance
+─────────────
+t3.micro
+Ubuntu 24.04
+hello-world service",
+						pos="291.5,189",
+						shape=none,
+						width=1.4028];
+				}
+			}
+			b8d6d55bf66b4c389949c74483553724	[height=2.6944,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/network/internet-gateway.png",
+				label="Internet Gateway
+─────────────
+hello-world-igw",
+				pos="291.5,587",
+				shape=none,
+				width=1.4028];
+			b8d6d55bf66b4c389949c74483553724 -> "3e305bea0f194424ba0f3204309df39f"	[color=green,
+				dir=forward,
+				fontcolor="#2D3436",
+				fontname="Sans-Serif",
+				fontsize=13,
+				pos="e,274.67,315.23 274.67,489.89 274.67,489.89 274.67,325.23 274.67,325.23"];
+			b8d6d55bf66b4c389949c74483553724 -> "3e305bea0f194424ba0f3204309df39f"	[color=blue,
+				dir=forward,
+				fontcolor="#2D3436",
+				fontname="Sans-Serif",
+				fontsize=13,
+				pos="e,308.33,315.23 308.33,489.89 308.33,489.89 308.33,325.23 308.33,325.23",
+				style=dashed];
+			"7e98faab040249c3b5a8650e6982a28a"	[height=2.6944,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/network/route-table.png",
+				label="Route Table
+─────────────
+0.0.0.0/0 → IGW",
+				pos="118.5,587",
+				shape=none,
+				width=1.4028];
+		}
+	}
+	"4e2538a0d1e7442a8440e7f1ad233bad"	[height=2.6944,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/general/users.png",
+		label="End Users
+─────────────
+HTTP :49000",
+		pos="464.5,970.5",
+		shape=none,
+		width=1.4028];
+	"4e2538a0d1e7442a8440e7f1ad233bad" -> b8d6d55bf66b4c389949c74483553724	[color=green,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=HTTP,
+		lp="481.5,809",
+		pos="e,342,587 464.5,873.23 464.5,759.62 464.5,587 464.5,587 464.5,587 352,587 352,587",
+		style=bold];
+	"86d16015bd2c461bbe6440577116010c"	[height=2.6944,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/client/user.png",
+		label="Admin
+─────────────
+SSH :22",
+		pos="291.5,970.5",
+		shape=none,
+		width=1.4028];
+	"86d16015bd2c461bbe6440577116010c" -> b8d6d55bf66b4c389949c74483553724	[color=blue,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=SSH,
+		lp="305,809",
+		pos="e,308.33,684.17 308.33,873.23 308.33,873.23 308.33,694.17 308.33,694.17",
+		style=dashed];
+	e597ce316f7b4e00943509b4dafdf47d	[height=3.0972,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/management/cloudformation.png",
+		label="CloudFormation
+─────────────
+hello-world stack
+cloudformation.yml",
+		pos="50.5,970.5",
+		shape=none,
+		width=1.4028];
+	e597ce316f7b4e00943509b4dafdf47d -> b8d6d55bf66b4c389949c74483553724	[color=gray,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=creates,
+		lp="189.5,809",
+		pos="e,274.67,684.19 101.09,866 167.2,866 274.67,866 274.67,866 274.67,866 274.67,694.19 274.67,694.19",
+		style=dotted];
+	e597ce316f7b4e00943509b4dafdf47d -> "7e98faab040249c3b5a8650e6982a28a"	[color=gray,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		pos="e,84.5,684.25 84.5,858.8 84.5,858.8 84.5,694.25 84.5,694.25",
+		style=dotted];
+	e597ce316f7b4e00943509b4dafdf47d -> "3e305bea0f194424ba0f3204309df39f"	[color=gray,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		pos="e,240.93,189 34,858.95 34,643.02 34,189 34,189 34,189 230.93,189 230.93,189",
+		style=dotted];
+}
