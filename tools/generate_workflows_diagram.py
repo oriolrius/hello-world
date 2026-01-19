@@ -25,7 +25,7 @@ graph_attr = {
 
 with Diagram(
     "GitHub Actions CI/CD Pipeline",
-    filename="../.github/workflows/cicd-architecture",
+    filename="../.github/workflows/docs/cicd-architecture",
     show=False,
     direction="LR",
     outformat=["png", "dot"],
@@ -95,4 +95,4 @@ with Diagram(
     # Flow - User traffic (green bold)
     users >> Edge(color="green", style="bold", label="HTTP") >> svc
 
-print("Generated: ../.github/workflows/cicd-architecture.png")
+print("Generated: ../.github/workflows/docs/cicd-architecture.png")

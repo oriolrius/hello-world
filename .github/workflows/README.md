@@ -31,17 +31,17 @@ Push v* tag → Lint + Test → Docker Build → Deploy to EKS
                          → GitHub Release
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed documentation.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed documentation.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
 | `release.yml` | Main CI/CD pipeline definition |
-| `ARCHITECTURE.md` | Detailed pipeline documentation |
-| `cicd-architecture.png` | Pipeline architecture diagram |
-| `cicd-architecture.drawio.png` | Editable diagram source |
-| `cicd-architecture.dot` | GraphViz source (auto-generated) |
+| `docs/ARCHITECTURE.md` | Detailed pipeline documentation |
+| `docs/cicd-architecture.png` | Pipeline architecture diagram |
+| `docs/cicd-architecture.drawio.png` | Editable diagram source |
+| `docs/cicd-architecture.dot` | GraphViz source (auto-generated) |
 
 ## Required Secrets
 
@@ -58,5 +58,5 @@ Configure these in **Settings → Secrets and variables → Actions**:
 ## Related Documentation
 
 - [Kubernetes Manifests](../../k8s/README.md)
-- [Infrastructure Architecture](../../infra/ARCHITECTURE.md)
+- [Infrastructure Architecture](../../infra/docs/ARCHITECTURE.md)
 - [Docker Configuration](../../docker/README.md)

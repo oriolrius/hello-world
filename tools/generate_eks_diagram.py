@@ -28,7 +28,7 @@ graph_attr = {
 
 with Diagram(
     "EKS Architecture: esade-teaching",
-    filename="../infra/eks-architecture",
+    filename="../infra/docs/eks-architecture",
     show=False,
     direction="TB",
     outformat=["png", "dot"],
@@ -117,4 +117,4 @@ with Diagram(
     cfn_nodegroup >> Edge(color="darkgray", style="dotted", label="creates") >> node1
     cfn_nodegroup >> Edge(color="darkgray", style="dotted") >> node2
 
-print("Generated: ../infra/eks-architecture.png and ../infra/eks-architecture.dot")
+print("Generated: ../infra/docs/eks-architecture.png and ../infra/docs/eks-architecture.dot")

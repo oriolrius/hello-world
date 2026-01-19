@@ -2,7 +2,7 @@
 
 Target Kubernetes cluster for deploying the hello-world application.
 
-> **Architecture Diagram**: See [ARCHITECTURE.md](ARCHITECTURE.md) for a visual diagram and detailed component descriptions.
+> **Architecture Diagram**: See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for a visual diagram and detailed component descriptions.
 
 ## Cluster Overview
 

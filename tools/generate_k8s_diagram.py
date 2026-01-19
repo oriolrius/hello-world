@@ -20,7 +20,7 @@ graph_attr = {
 
 with Diagram(
     "Hello World - Kubernetes Architecture",
-    filename="../k8s/k8s-architecture",
+    filename="../k8s/docs/k8s-architecture",
     show=False,
     direction="LR",
     outformat=["png", "dot"],
@@ -50,4 +50,4 @@ with Diagram(
     registry >> Edge(color="orange", style="dashed", label="pull image") >> pod1
     registry >> Edge(color="orange", style="dashed") >> pod2
 
-print("Generated: ../k8s/k8s-architecture.png and ../k8s/k8s-architecture.dot")
+print("Generated: ../k8s/docs/k8s-architecture.png and ../k8s/docs/k8s-architecture.dot")

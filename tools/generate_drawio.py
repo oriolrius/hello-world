@@ -216,7 +216,7 @@ def generate_eks_diagram():
 
 if __name__ == "__main__":
     xml = generate_eks_diagram()
-    output_path = "../infra/eks-architecture.drawio"
+    output_path = "../infra/docs/eks-architecture.drawio"
     with open(output_path, "w") as f:
         f.write(xml)
     print(f"Generated: {output_path}")

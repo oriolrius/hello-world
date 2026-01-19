@@ -233,8 +233,11 @@ eksctl delete cluster --name esade-teaching --region eu-west-1
 | Document | Description |
 |----------|-------------|
 | [k8s/README.md](k8s/README.md) | Kubernetes deployment guide, scaling, failure recovery simulation, troubleshooting |
+| [k8s/docs/ARCHITECTURE.md](k8s/docs/ARCHITECTURE.md) | Kubernetes architecture diagram |
 | [infra/README.md](infra/README.md) | EKS cluster documentation, networking, add-ons, management commands |
-| [infra/ARCHITECTURE.md](infra/ARCHITECTURE.md) | Architecture diagram and detailed infrastructure component descriptions |
+| [infra/docs/ARCHITECTURE.md](infra/docs/ARCHITECTURE.md) | EKS infrastructure architecture diagram |
+| [.github/workflows/README.md](.github/workflows/README.md) | CI/CD pipeline documentation |
+| [.github/workflows/docs/ARCHITECTURE.md](.github/workflows/docs/ARCHITECTURE.md) | CI/CD pipeline architecture diagram |
 
 ---
 
@@ -252,14 +255,17 @@ hello-world/
 │   ├── deployment.yaml    # Deployment (2 replicas, health probes)
 │   ├── service.yaml       # LoadBalancer service
 │   ├── kustomization.yaml # Kustomize config
-│   └── README.md          # K8s operations guide
+│   ├── README.md          # K8s operations guide
+│   └── docs/              # Architecture documentation
 ├── infra/
 │   ├── eksctl-cluster.yaml # EKS cluster definition
-│   ├── ARCHITECTURE.md     # Architecture diagram and docs
-│   ├── architecture.svg    # Infrastructure diagram
-│   └── README.md           # Cluster documentation
-└── .github/workflows/
-    └── release.yml        # CI/CD pipeline
+│   ├── README.md           # Cluster documentation
+│   └── docs/               # Architecture documentation
+├── .github/workflows/
+│   ├── release.yml        # CI/CD pipeline
+│   ├── README.md          # Workflow documentation
+│   └── docs/              # Architecture documentation
+└── tools/                 # Diagram generation scripts
 ```
 
 ---

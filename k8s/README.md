@@ -2,6 +2,8 @@
 
 Deploy hello-world to the **esade-teaching** EKS cluster.
 
+> **Architecture Diagram**: See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for a visual diagram of the Kubernetes resources.
+
 ## Prerequisites
 
 1. AWS CLI configured with valid credentials
