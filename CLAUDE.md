@@ -2,9 +2,9 @@
 
 ## Commit Message Format
 
-This project uses **Conventional Commits** (https://www.conventionalcommits.org/) and **Semantic Versioning** (https://semver.org/).
+This project uses **Conventional Commits** via [commitizen](https://commitizen-tools.github.io/commitizen/).
 
-### Commit Message Structure
+### Format
 
 ```
 type(scope)?: description
@@ -14,67 +14,64 @@ type(scope)?: description
 [optional footer(s)]
 ```
 
-### Types
+### Types and Version Bumps
 
 | Type | Description | Version Bump |
 |------|-------------|--------------|
 | `feat` | A new feature | MINOR |
 | `fix` | A bug fix | PATCH |
-| `docs` | Documentation only changes | - |
-| `style` | Code style (formatting, semicolons, etc) | - |
-| `refactor` | Code change that neither fixes a bug nor adds a feature | - |
+| `docs` | Documentation only | - |
+| `style` | Code style (formatting) | - |
+| `refactor` | Neither fix nor feature | - |
 | `perf` | Performance improvement | PATCH |
-| `test` | Adding or correcting tests | - |
-| `build` | Build system or external dependencies | - |
-| `ci` | CI configuration changes | - |
-| `chore` | Other changes (don't modify src or test) | - |
-| `revert` | Reverts a previous commit | - |
+| `test` | Adding/correcting tests | - |
+| `build` | Build system changes | - |
+| `ci` | CI configuration | - |
+| `chore` | Maintenance tasks | - |
+| `revert` | Reverts a commit | - |
 
 ### Breaking Changes
 
-Add `!` after type/scope for breaking changes (MAJOR version bump):
+Add `!` after type/scope or `BREAKING CHANGE:` in footer → MAJOR bump:
 ```
-feat!: remove deprecated API endpoints
-feat(api)!: change authentication method
+feat!: remove deprecated API
+feat(api)!: change auth method
+
+feat: new feature
+
+BREAKING CHANGE: description of breaking change
 ```
 
 ### Examples
 
 ```
-feat: add user login functionality
-fix(auth): resolve token expiration bug
-docs: update API documentation
-refactor(core): simplify request handling
-feat!: redesign user API (breaking change)
+feat: add user login
+fix(auth): resolve token bug
+docs: update API docs
+feat!: redesign API (breaking)
 ```
 
-### Rules
+### Version Bumping
 
-1. Use lowercase for type and description
-2. No period at the end of the description
-3. Use imperative mood ("add" not "added" or "adds")
-4. Keep first line under 72 characters
-5. Separate subject from body with blank line (if body present)
+Commitizen automatically determines version bumps from commit history:
+
+```bash
+cz bump          # bump version based on commits
+cz bump --dry-run  # preview what would happen
+```
 
 ### Co-Authored-By
 
-When creating commits, include the co-author footer:
+Include when creating commits:
 ```
 Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ```
 
-## Versioning
-
-This project follows Semantic Versioning (MAJOR.MINOR.PATCH):
-
-- **MAJOR**: Breaking changes (`feat!`, `fix!`, etc.)
-- **MINOR**: New features (`feat`)
-- **PATCH**: Bug fixes (`fix`, `perf`)
-
-## Git Hooks
-
-A `commit-msg` hook validates all commit messages. To enable hooks after cloning:
+## Commands
 
 ```bash
-git config core.hooksPath .githooks
+cz commit        # interactive commit (optional)
+cz check         # validate last commit
+cz bump          # bump version + changelog
+cz changelog     # generate changelog only
 ```
