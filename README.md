@@ -1,12 +1,62 @@
 # hello-world
 
-Simple web server that returns `hello-world`.
+A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
 
-## What's New in v3.0.0
+## What This Version Demonstrates (v3.x)
 
-- **AWS CloudFormation Deployment**: One-click infrastructure deployment to AWS EC2
-- **Automated Release Pipeline**: CI/CD with linting, testing, and GitHub releases
-- **Systemd Integration**: Auto-start service on EC2 instances
+This version introduces **Infrastructure as Code (IaC)** with AWS CloudFormation:
+
+| Practice | Implementation |
+|----------|----------------|
+| Infrastructure as Code | AWS CloudFormation templates |
+| Cloud Deployment | EC2 instance in custom VPC |
+| Network Configuration | VPC, Subnet, Internet Gateway, Security Groups |
+| Application Bootstrap | Shell script via EC2 UserData |
+| Service Management | systemd for process supervision |
+
+### Evolution from v2.x
+
+- **v2.x**: CI/CD pipeline that builds and releases — but where does it run?
+- **v3.x**: Answers "where does it run?" with **Infrastructure as Code** — the entire AWS environment is defined in `cloudformation.yml`
+
+```
+v2.x: Code → Build → Release → ???
+v3.x: Code → Build → Release → CloudFormation → EC2 (running!)
+```
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    AWS CloudFormation                        │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │                   VPC (10.0.0.0/16)                     ││
+│  │  ┌─────────────────────────────────────────────────────┐││
+│  │  │              Public Subnet (10.0.1.0/24)            │││
+│  │  │  ┌─────────────────────────────────────────────────┐│││
+│  │  │  │              EC2 Instance (t3.micro)            ││││
+│  │  │  │  ┌─────────────────────────────────────────────┐││││
+│  │  │  │  │  UserData Bootstrap Script:                 │││││
+│  │  │  │  │  1. Install uv                              │││││
+│  │  │  │  │  2. uv tool install hello-world             │││││
+│  │  │  │  │  3. Create systemd service                  │││││
+│  │  │  │  │  4. Start service on port 49000             │││││
+│  │  │  │  └─────────────────────────────────────────────┘││││
+│  │  │  └─────────────────────────────────────────────────┘│││
+│  │  └─────────────────────────────────────────────────────┘││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key learning**: Infrastructure can be versioned, reviewed, and automated just like application code. "Clicking in the AWS console" is replaced by `aws cloudformation deploy`.
+
+### Limitation of This Approach
+
+The bootstrap script runs **only on first launch**. To update the application, you must:
+1. Delete the stack and recreate it, OR
+2. SSH into the instance and manually update
+
+This limitation is addressed in later versions.
 
 ## Installation
 
