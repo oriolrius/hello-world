@@ -1,0 +1,165 @@
+digraph "AWS Infrastructure - v4.0.x" {
+	graph [bb="0,0,950,353",
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=14,
+		label="AWS Infrastructure - v4.0.x",
+		lheight=0.21,
+		lp="475,11.5",
+		lwidth=2.64,
+		nodesep=0.8,
+		pad=2.0,
+		rankdir=LR,
+		ranksep=1.0,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#7B8894"];
+	subgraph "cluster_AWS Region (eu-west-1)" {
+		graph [bb="244,31,942,345",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="AWS Region (eu-west-1)",
+			labeljust=l,
+			lheight=0.18,
+			lp="324,334.5",
+			lwidth=2.00,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		subgraph "cluster_VPC (10.0.0.0/16)" {
+			graph [bb="418,39,934,316",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="VPC (10.0.0.0/16)",
+				labeljust=l,
+				lheight=0.18,
+				lp="478.5,305.5",
+				lwidth=1.46,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			subgraph "cluster_Public Subnet (10.0.1.0/24)" {
+				graph [bb="592,47,926,287",
+					bgcolor="#ECE8F6",
+					fontname="Sans-Serif",
+					fontsize=12,
+					label="Public Subnet (10.0.1.0/24)",
+					labeljust=l,
+					lheight=0.18,
+					lp="680.5,276.5",
+					lwidth=2.24,
+					pencolor="#AEB6BE",
+					rankdir=LR,
+					shape=box,
+					style=rounded
+				];
+				subgraph "cluster_EC2 Instance" {
+					graph [bb="801,55,918,258",
+						bgcolor="#FDF7E3",
+						fontname="Sans-Serif",
+						fontsize=12,
+						label="EC2 Instance",
+						labeljust=l,
+						lheight=0.18,
+						lp="848.5,247.5",
+						lwidth=1.10,
+						pencolor="#AEB6BE",
+						rankdir=LR,
+						shape=box,
+						style=rounded
+					];
+					"5ce0ec37a59d4ebcb6102f098824b1bb"	[height=2.3056,
+						image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/compute/ec2.png",
+						label="hello-world
+(t3.micro)",
+						pos="859.5,146",
+						shape=none,
+						width=1.4028];
+				}
+				da7d8f6fcbb14496b9f2efec68808523	[height=2.3056,
+					image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/generic/network/firewall.png",
+					label="Security
+Group",
+					pos="650.5,146",
+					shape=none,
+					width=1.4028];
+				da7d8f6fcbb14496b9f2efec68808523 -> "5ce0ec37a59d4ebcb6102f098824b1bb"	[color=green,
+					dir=forward,
+					fontcolor="#2D3436",
+					fontname="Sans-Serif",
+					fontsize=13,
+					label=Allow,
+					lp="755,153",
+					pos="e,808.65,146 701.09,146 701.09,146 798.65,146 798.65,146"];
+			}
+			"0540582afe0a401eb716e6b4ebfb899c"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/network/route-table.png",
+				label="Route
+Table",
+				pos="476.5,146",
+				shape=none,
+				width=1.4028];
+			"0540582afe0a401eb716e6b4ebfb899c" -> da7d8f6fcbb14496b9f2efec68808523	[color=blue,
+				dir=forward,
+				fontcolor="#2D3436",
+				fontname="Sans-Serif",
+				fontsize=13,
+				pos="e,599.94,146 527.3,146 527.3,146 589.94,146 589.94,146"];
+		}
+		"563807d3e6dd476682a0087d33109ca5"	[height=2.3056,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/network/internet-gateway.png",
+			label="Internet
+Gateway",
+			pos="302.5,146",
+			shape=none,
+			width=1.4028];
+		"563807d3e6dd476682a0087d33109ca5" -> "0540582afe0a401eb716e6b4ebfb899c"	[color=blue,
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			pos="e,425.94,146 353.3,146 353.3,146 415.94,146 415.94,146"];
+	}
+	a6b295a900cb4f1fb4962f104035fe5f	[height=2.3056,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/client/users.png",
+		label="Internet
+Users",
+		pos="50.5,145",
+		shape=none,
+		width=1.4028];
+	a6b295a900cb4f1fb4962f104035fe5f -> "563807d3e6dd476682a0087d33109ca5"	[color=blue,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label="HTTP:49000",
+		lp="176.5,191",
+		pos="e,251.89,118 101.19,118 101.19,118 241.89,118 241.89,118"];
+	a6b295a900cb4f1fb4962f104035fe5f -> "563807d3e6dd476682a0087d33109ca5"	[color=orange,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label="SSH:22",
+		lp="176.5,114",
+		pos="e,251.89,173 101.19,173 101.19,173 241.89,173 241.89,173",
+		style=dashed];
+}
