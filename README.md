@@ -1,6 +1,81 @@
 # hello-world
 
-Simple web server that returns `hello-world`.
+A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
+
+## What This Version Demonstrates (v5.x)
+
+This version introduces **Containerization** with Docker, packaging the application as a portable container image:
+
+| Practice | Implementation |
+|----------|----------------|
+| Containerization | Docker image with multi-stage build |
+| Container Registry | GitHub Container Registry (ghcr.io) |
+| Container Orchestration | Docker Compose for deployment |
+| Infrastructure | AWS CloudFormation (unchanged) |
+| Configuration Management | Ansible deploys Docker + Compose |
+
+### Evolution from v4.x
+
+- **v4.x**: Ansible installs the app directly on the host using `uv tool install`
+- **v5.x**: Ansible installs **Docker**, then deploys the app as a **container**
+
+```
+v4.x: Ansible → Install uv → Install app → Run as systemd service
+v5.x: Ansible → Install Docker → Pull image → Run as Docker container
+```
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              GitHub Actions                                  │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                       Release Workflow                                │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌────────────┐ │   │
+│  │  │  Lint   │─▶│  Test   │─▶│  Build  │─▶│ Docker  │─▶│   Push to  │ │   │
+│  │  │         │  │         │  │  wheel  │  │  Build  │  │   ghcr.io  │ │   │
+│  │  └─────────┘  └─────────┘  └─────────┘  └─────────┘  └────────────┘ │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                       Deploy Workflow                                 │   │
+│  │  CloudFormation → Ansible → Install Docker → docker compose up       │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      │ Pull image
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           EC2 Instance                                       │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                          Docker Engine                                  │ │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │ │
+│  │  │              hello-world container (port 49000)                  │  │ │
+│  │  │              ghcr.io/oriolrius/hello-world:latest                │  │ │
+│  │  └──────────────────────────────────────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Differences from v4.x
+
+| Aspect | v4.x (Direct Install) | v5.x (Docker) |
+|--------|----------------------|---------------|
+| Runtime | Python on host | Container |
+| Dependencies | Installed on host | Bundled in image |
+| Isolation | Shared with host | Fully isolated |
+| Portability | Ubuntu-specific | Any Docker host |
+| Updates | Re-run Ansible | Pull new image |
+| Rollback | Manual | `docker compose down && up` with old tag |
+
+### Why Docker?
+
+1. **Immutable artifacts**: The image is the same everywhere (dev, staging, prod)
+2. **Isolation**: App doesn't pollute or depend on host system
+3. **Portability**: Runs anywhere Docker runs (cloud, local, CI)
+4. **Version pinning**: `image:v5.0.0` guarantees exact version
+
+**Key learning**: Containers decouple the application from the host, making deployments reproducible and rollbacks trivial.
 
 ## Installation
 
