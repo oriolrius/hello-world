@@ -1,6 +1,33 @@
 # hello-world
 
-A lightweight web server that returns `hello-world`. Perfect for testing and learning purposes.
+A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
+
+## What This Version Demonstrates (v2.x)
+
+This version introduces **CI/CD fundamentals** with GitHub Actions:
+
+| Practice | Implementation |
+|----------|----------------|
+| Code Quality | Automated linting with `ruff` |
+| Testing | Unit tests with `pytest` |
+| Build | Python wheel packaging with `uv build` |
+| Release | Automated GitHub releases on tag push |
+
+### Evolution from v1.x
+
+- **v1.x**: Manual development — run locally, no automation
+- **v2.x**: Introduces the CI/CD pipeline — code is automatically checked, tested, built, and released when you push a tag
+
+The workflow (`release.yml`) runs: `lint → test → build → release`
+
+```
+┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
+│  Lint   │────▶│  Test   │────▶│  Build  │────▶│ Release │
+│ (ruff)  │     │(pytest) │     │(uv build)│    │ (GitHub)│
+└─────────┘     └─────────┘     └─────────┘     └─────────┘
+```
+
+**Key learning**: Automation ensures consistent quality — every release is linted, tested, and packaged the same way.
 
 ## Installation
 
