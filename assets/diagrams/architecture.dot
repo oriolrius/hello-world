@@ -1,0 +1,149 @@
+digraph "Architecture Overview (v4.x)" {
+	graph [bb="0,0,241,1191",
+		bgcolor=white,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=14,
+		label="Architecture Overview (v4.x)",
+		lheight=0.21,
+		lp="120.5,11.5",
+		lwidth=2.76,
+		nodesep=0.8,
+		pad=0.8,
+		rankdir=TB,
+		ranksep=1.0,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#7B8894"];
+	subgraph "cluster_GitHub Actions - Deploy Workflow" {
+		graph [bb="16,502,233,1183",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="GitHub Actions - Deploy Workflow",
+			labeljust=l,
+			lheight=0.18,
+			lp="124.5,1172.5",
+			lwidth=2.79,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		e024ae7d9ab54f27871aba154eddbfb7	[height=2.3056,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/management/cloudformation.png",
+			label="CloudFormation
+(infra only)",
+			pos="83,1071",
+			shape=none,
+			width=1.4028];
+		c39ef2127d784c3fb4bdebd6f4aeb4ae	[height=2.3056,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+			label="Get EC2 IP
+from Outputs",
+			pos="83,832",
+			shape=none,
+			width=1.4028];
+		e024ae7d9ab54f27871aba154eddbfb7 -> c39ef2127d784c3fb4bdebd6f4aeb4ae	[color="#666666",
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			pos="e,83,915.36 83,987.74 83,987.74 83,925.36 83,925.36"];
+		daec579547654a96b9f3f0c96f64bac1	[height=2.3056,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/iac/ansible.png",
+			label="Ansible
+Playbook",
+			pos="83,593",
+			shape=none,
+			width=1.4028];
+		c39ef2127d784c3fb4bdebd6f4aeb4ae -> daec579547654a96b9f3f0c96f64bac1	[color="#666666",
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			pos="e,83,676.36 83,748.74 83,748.74 83,686.36 83,686.36"];
+	}
+	subgraph "cluster_AWS Cloud" {
+		graph [bb="8,31,158,452",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="AWS Cloud",
+			labeljust=l,
+			lheight=0.18,
+			lp="48.5,441.5",
+			lwidth=0.90,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		subgraph "cluster_VPC (10.0.0.0/16)" {
+			graph [bb="16,39,150,423",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="VPC (10.0.0.0/16)",
+				labeljust=l,
+				lheight=0.18,
+				lp="76.5,412.5",
+				lwidth=1.46,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			subgraph "cluster_Public Subnet" {
+				graph [bb="24,47,142,394",
+					bgcolor="#ECE8F6",
+					fontname="Sans-Serif",
+					fontsize=12,
+					label="Public Subnet",
+					labeljust=l,
+					lheight=0.18,
+					lp="72.5,383.5",
+					lwidth=1.12,
+					pencolor="#AEB6BE",
+					rankdir=LR,
+					shape=box,
+					style=rounded
+				];
+				"547f827ca636448285113fb9febdfd97"	[height=4.3056,
+					image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/compute/ec2.png",
+					label="EC2 Instance
+─────────────
+Ansible installs:
+• curl (apt)
+• uv (astral.sh)
+• hello-world
+• systemd \
+service",
+					pos="83,210",
+					shape=none,
+					width=1.4028];
+			}
+		}
+	}
+	daec579547654a96b9f3f0c96f64bac1 -> "547f827ca636448285113fb9febdfd97"	[color="#48BB78",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=SSH,
+		lp="96.5,467",
+		pos="e,83,365.12 83,509.89 83,509.89 83,375.12 83,375.12",
+		style=bold];
+}
