@@ -20,12 +20,7 @@ This version introduces **CI/CD fundamentals** with GitHub Actions:
 
 The workflow (`release.yml`) runs: `lint → test → build → release`
 
-```
-┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
-│  Lint   │────▶│  Test   │────▶│  Build  │────▶│ Release │
-│ (ruff)  │     │(pytest) │     │(uv build)│    │ (GitHub)│
-└─────────┘     └─────────┘     └─────────┘     └─────────┘
-```
+![CI/CD Pipeline](assets/diagrams/cicd-pipeline.png)
 
 **Key learning**: Automation ensures consistent quality — every release is linted, tested, and packaged the same way.
 
@@ -59,7 +54,7 @@ uvx --from git+https://github.com/oriolrius/hello-world hello-world
 
 ```bash
 uv build
-uvx --from ./dist/hello_world-2.0.2-py3-none-any.whl hello-world
+uvx --from ./dist/hello_world-2.0.3-py3-none-any.whl hello-world
 ```
 
 ## Parameters

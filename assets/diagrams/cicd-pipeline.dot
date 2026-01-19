@@ -1,0 +1,84 @@
+digraph "CI/CD Pipeline (v2.x)" {
+	graph [bb="0,0,713,189",
+		bgcolor=white,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=14,
+		label="CI/CD Pipeline (v2.x)",
+		lheight=0.21,
+		lp="356.5,11.5",
+		lwidth=1.99,
+		nodesep=1.0,
+		pad=2.0,
+		rankdir=LR,
+		ranksep=1.0,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=12,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#2D3748",
+		penwidth=2.0
+	];
+	"45bfb02c099c45ffafb181b26fdf138f"	[height=2.3056,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+		label="Lint
+(ruff)",
+		pos="50.5,106",
+		shape=none,
+		width=1.4028];
+	"394e3a9ccbf04520b357d433daac1d7d"	[height=2.3056,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+		label="Test
+(pytest)",
+		pos="254.5,106",
+		shape=none,
+		width=1.4028];
+	"45bfb02c099c45ffafb181b26fdf138f" -> "394e3a9ccbf04520b357d433daac1d7d"	[color="#48BB78",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=pass,
+		lp="152.5,113",
+		pos="e,203.72,106 101.19,106 101.19,106 193.72,106 193.72,106"];
+	"9c7d1c194f1a471595840752f4c2f6fe"	[height=2.3056,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+		label="Build
+(uv build)",
+		pos="458.5,106",
+		shape=none,
+		width=1.4028];
+	"394e3a9ccbf04520b357d433daac1d7d" -> "9c7d1c194f1a471595840752f4c2f6fe"	[color="#48BB78",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=pass,
+		lp="356.5,113",
+		pos="e,407.72,106 305.19,106 305.19,106 397.72,106 397.72,106"];
+	fa557e6a5ad8481b9e48fbffb66ef1ba	[height=2.3056,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+		label="Release
+(GitHub)",
+		pos="662.5,106",
+		shape=none,
+		width=1.4028];
+	"9c7d1c194f1a471595840752f4c2f6fe" -> fa557e6a5ad8481b9e48fbffb66ef1ba	[color="#48BB78",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=pass,
+		lp="560.5,113",
+		pos="e,611.72,106 509.19,106 509.19,106 601.72,106 601.72,106"];
+}
