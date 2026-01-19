@@ -91,33 +91,7 @@ Deploy to Amazon EKS with automated CI/CD via GitHub Actions.
 
 ### Architecture
 
-```
-GitHub Actions (CI/CD)
-    │
-    ├── lint & test
-    ├── build Docker image → ghcr.io/oriolrius/hello-world
-    └── deploy to EKS
-            │
-            ▼
-    ┌─────────────────────────────────────┐
-    │  EKS Cluster: esade-teaching        │
-    │  Region: eu-west-1                  │
-    │                                     │
-    │  ┌─────────────────────────────┐    │
-    │  │  Namespace: hello-world     │    │
-    │  │                             │    │
-    │  │  ┌─────┐  ┌─────┐          │    │
-    │  │  │ Pod │  │ Pod │  (2x)    │    │
-    │  │  └──┬──┘  └──┬──┘          │    │
-    │  │     └────┬───┘             │    │
-    │  │          ▼                 │    │
-    │  │   LoadBalancer (AWS ELB)   │    │
-    │  └─────────────────────────────┘    │
-    └─────────────────────────────────────┘
-            │
-            ▼
-    http://<elb-hostname>/
-```
+![Architecture Overview](assets/diagrams/architecture.png)
 
 ### Prerequisites
 
