@@ -1,0 +1,186 @@
+digraph "Ansible Deployment - v4.0.x" {
+	graph [bb="0,0,214,1252",
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=14,
+		label="Ansible Deployment - v4.0.x",
+		lheight=0.21,
+		lp="107,11.5",
+		lwidth=2.75,
+		nodesep=0.8,
+		pad=2.0,
+		rankdir=TB,
+		ranksep=1.0,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#7B8894"];
+	subgraph "cluster_Control Node" {
+		graph [bb="45,1041,163,1244",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="Control Node",
+			labeljust=l,
+			lheight=0.18,
+			lp="92.5,1233.5",
+			lwidth=1.10,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		"9142305bb553471ea7e7b8ed52bdd618"	[height=2.3056,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/iac/ansible.png",
+			label="Ansible
+Playbook",
+			pos="104,1132",
+			shape=none,
+			width=1.4028];
+	}
+	subgraph "cluster_EC2 Instance (Ubuntu 24.04)" {
+		graph [bb="13,31,201,991",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="EC2 Instance (Ubuntu 24.04)",
+			labeljust=l,
+			lheight=0.18,
+			lp="107,980.5",
+			lwidth=2.39,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		subgraph "cluster_1. System Setup" {
+			graph [bb="45,759,163,962",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="1. System Setup",
+				labeljust=l,
+				lheight=0.18,
+				lp="102,951.5",
+				lwidth=1.36,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			"64fddbf22e4c4b1fb3244964887f8a11"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/generic/os/ubuntu.png",
+				label="apt
+install curl",
+				pos="104,850",
+				shape=none,
+				width=1.4028];
+		}
+		subgraph "cluster_2. uv Installation" {
+			graph [bb="45,519,163,722",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="2. uv Installation",
+				labeljust=l,
+				lheight=0.18,
+				lp="102.5,711.5",
+				lwidth=1.38,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			"89104c2f4435464eb29876145339f592"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/programming/language/python.png",
+				label="uv
+(astral.sh)",
+				pos="104,610",
+				shape=none,
+				width=1.4028];
+		}
+		subgraph "cluster_3. App Installation" {
+			graph [bb="45,279,169,482",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="3. App Installation",
+				labeljust=l,
+				lheight=0.18,
+				lp="107,471.5",
+				lwidth=1.50,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			"4ffbc24c6e924689b7244c50466e9e66"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/programming/language/python.png",
+				label="hello-world
+(uv tool)",
+				pos="104,370",
+				shape=none,
+				width=1.4028];
+		}
+		subgraph "cluster_4. Service Config" {
+			graph [bb="45,39,163,242",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="4. Service Config",
+				labeljust=l,
+				lheight=0.18,
+				lp="104,231.5",
+				lwidth=1.42,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			"3ee4d94d617549fca92859e26c17b55a"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/compute/server.png",
+				label="systemd
+service",
+				pos="104,130",
+				shape=none,
+				width=1.4028];
+		}
+		"64fddbf22e4c4b1fb3244964887f8a11" -> "89104c2f4435464eb29876145339f592"	[color=green,
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			pos="e,104,693.12 104,766.73 104,766.73 104,703.12 104,703.12"];
+		"89104c2f4435464eb29876145339f592" -> "4ffbc24c6e924689b7244c50466e9e66"	[color=green,
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			pos="e,104,453.12 104,526.73 104,526.73 104,463.12 104,463.12"];
+		"4ffbc24c6e924689b7244c50466e9e66" -> "3ee4d94d617549fca92859e26c17b55a"	[color=green,
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			pos="e,104,213.12 104,286.73 104,286.73 104,223.12 104,223.12"];
+	}
+	"9142305bb553471ea7e7b8ed52bdd618" -> "64fddbf22e4c4b1fb3244964887f8a11"	[color=blue,
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=SSH,
+		lp="117.5,1006",
+		pos="e,104,933.46 104,1048.9 104,1048.9 104,943.46 104,943.46"];
+}
