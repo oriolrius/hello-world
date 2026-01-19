@@ -32,7 +32,7 @@ uvx --from git+https://github.com/oriolrius/hello-world hello-world
 
 ```bash
 uv build
-uvx --from ./dist/hello_world-2.0.1-py3-none-any.whl hello-world
+uvx --from ./dist/hello_world-2.0.2-py3-none-any.whl hello-world
 ```
 
 ## Parameters
