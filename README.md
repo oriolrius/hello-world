@@ -26,27 +26,7 @@ v3.x: Code → Build → Release → CloudFormation → EC2 (running!)
 
 ### Architecture Overview
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    AWS CloudFormation                        │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │                   VPC (10.0.0.0/16)                     ││
-│  │  ┌─────────────────────────────────────────────────────┐││
-│  │  │              Public Subnet (10.0.1.0/24)            │││
-│  │  │  ┌─────────────────────────────────────────────────┐│││
-│  │  │  │              EC2 Instance (t3.micro)            ││││
-│  │  │  │  ┌─────────────────────────────────────────────┐││││
-│  │  │  │  │  UserData Bootstrap Script:                 │││││
-│  │  │  │  │  1. Install uv                              │││││
-│  │  │  │  │  2. uv tool install hello-world             │││││
-│  │  │  │  │  3. Create systemd service                  │││││
-│  │  │  │  │  4. Start service on port 49000             │││││
-│  │  │  │  └─────────────────────────────────────────────┘││││
-│  │  │  └─────────────────────────────────────────────────┘│││
-│  │  └─────────────────────────────────────────────────────┘││
-│  └─────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
+![Architecture Overview](assets/diagrams/architecture.png)
 
 **Key learning**: Infrastructure can be versioned, reviewed, and automated just like application code. "Clicking in the AWS console" is replaced by `aws cloudformation deploy`.
 

@@ -1,0 +1,123 @@
+digraph "Architecture Overview (v3.x)" {
+	graph [bb="0,0,215,928",
+		bgcolor=white,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=14,
+		label="Architecture Overview (v3.x)",
+		lheight=0.21,
+		lp="107.5,11.5",
+		lwidth=2.76,
+		nodesep=0.8,
+		pad=0.8,
+		rankdir=TB,
+		ranksep=1.0,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#7B8894"];
+	subgraph "cluster_VPC (10.0.0.0/16)" {
+		graph [bb="11,31,204,704",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="VPC (10.0.0.0/16)",
+			labeljust=l,
+			lheight=0.18,
+			lp="71.5,693.5",
+			lwidth=1.46,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		subgraph "cluster_Public Subnet (10.0.1.0/24)" {
+			graph [bb="19,39,196,464",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="Public Subnet (10.0.1.0/24)",
+				labeljust=l,
+				lheight=0.18,
+				lp="107.5,453.5",
+				lwidth=2.24,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			subgraph "cluster_Security Group
+Ports: 22, 49000" {
+				graph [bb="48,47,166,435",
+					bgcolor="#ECE8F6",
+					fontname="Sans-Serif",
+					fontsize=12,
+					label="Security Group
+Ports: 22, 49000",
+					labeljust=l,
+					lheight=0.36,
+					lp="105,418",
+					lwidth=1.36,
+					pencolor="#AEB6BE",
+					rankdir=LR,
+					shape=box,
+					style=rounded
+				];
+				bb06723cbbc84bc0890b6ad1b78057c1	[height=4.6944,
+					image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/compute/ec2.png",
+					label="EC2 (t3.micro)
+Ubuntu 24.04
+─────────────
+UserData:
+• Install uv
+• Install hello-world
+• systemd \
+service
+• Port 49000",
+					pos="107,224",
+					shape=none,
+					width=1.4028];
+			}
+		}
+		"92e9316b080b4233909639003fd2fc1a"	[height=2.3056,
+			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/network/internet-gateway.png",
+			label="Internet
+Gateway",
+			pos="107,592",
+			shape=none,
+			width=1.4028];
+		"92e9316b080b4233909639003fd2fc1a" -> bb06723cbbc84bc0890b6ad1b78057c1	[color="#48BB78",
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			pos="e,107,393.28 107,508.95 107,508.95 107,403.28 107,403.28"];
+	}
+	"227095af0bef4f099548268a41d5eb84"	[height=2.3056,
+		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/management/cloudformation.png",
+		label="CloudFormation
+infra/cloudformation.yml",
+		pos="107,845",
+		shape=none,
+		width=1.4028];
+	"227095af0bef4f099548268a41d5eb84" -> "92e9316b080b4233909639003fd2fc1a"	[color="#666666",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label=deploys,
+		lp="133,719",
+		pos="e,107,675.24 107,761.81 107,761.81 107,685.24 107,685.24",
+		style=dashed];
+}
