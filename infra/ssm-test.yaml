@@ -4,8 +4,8 @@ Description: Ubuntu 24.04 EC2 instance with SSM Session Manager access (no SSH r
 Parameters:
   InstanceType:
     Type: String
-    Default: t3a.micro
-    Description: EC2 instance type (AMD-based)
+    Default: t3a.small
+    Description: EC2 instance type (AMD-based, 2GB RAM)
 
 Resources:
   # VPC
