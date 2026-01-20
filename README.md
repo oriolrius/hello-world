@@ -6,13 +6,13 @@ A teaching project that demonstrates the evolution of DevOps practices. The appl
 
 This version introduces **Infrastructure as Code (IaC)** with AWS CloudFormation:
 
-| Practice | Implementation |
-|----------|----------------|
-| Infrastructure as Code | AWS CloudFormation templates |
-| Cloud Deployment | EC2 instance in custom VPC |
-| Network Configuration | VPC, Subnet, Internet Gateway, Security Groups |
-| Application Bootstrap | Shell script via EC2 UserData |
-| Service Management | systemd for process supervision |
+| Practice               | Implementation                                 |
+| ---------------------- | ---------------------------------------------- |
+| Infrastructure as Code | AWS CloudFormation templates                   |
+| Cloud Deployment       | EC2 instance in custom VPC                     |
+| Network Configuration  | VPC, Subnet, Internet Gateway, Security Groups |
+| Application Bootstrap  | Shell script via EC2 UserData                  |
+| Service Management     | systemd for process supervision                |
 
 ### Evolution from v2.x
 
@@ -33,6 +33,7 @@ v3.x: Code → Build → Release → CloudFormation → EC2 (running!)
 ### Limitation of This Approach
 
 The bootstrap script runs **only on first launch**. To update the application, you must:
+
 1. Delete the stack and recreate it, OR
 2. SSH into the instance and manually update
 
@@ -82,10 +83,10 @@ uv build                        # build .tar.gz and .whl
 
 ## Parameters
 
-| Flag | Description | Default |
-|------|-------------|---------|
+| Flag           | Description  | Default     |
+| -------------- | ------------ | ----------- |
 | `-b, --bind` | Bind address | `0.0.0.0` |
-| `-p, --port` | Port number | `49000` |
+| `-p, --port` | Port number  | `49000`   |
 
 ## Examples
 
@@ -121,11 +122,11 @@ Triggered on release publish or manually via `workflow_dispatch`.
 
 **Required GitHub Secrets:**
 
-| Secret | Description |
-|--------|-------------|
-| `AWS_ACCESS_KEY_ID` | AWS access key |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key |
-| `AWS_SESSION_TOKEN` | AWS session token (if using temporary credentials) |
+| Secret                    | Description                                        |
+| ------------------------- | -------------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`     | AWS access key                                     |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key                                     |
+| `AWS_SESSION_TOKEN`     | AWS session token (if using temporary credentials) |
 
 ## AWS Deployment
 
@@ -150,12 +151,12 @@ aws configure
 
 You'll be prompted for:
 
-| Prompt | Description |
-|--------|-------------|
-| AWS Access Key ID | Your IAM access key |
+| Prompt                | Description         |
+| --------------------- | ------------------- |
+| AWS Access Key ID     | Your IAM access key |
 | AWS Secret Access Key | Your IAM secret key |
-| Default region name | e.g., `eu-west-1` |
-| Default output format | e.g., `json` |
+| Default region name   | e.g.,`eu-west-1`  |
+| Default output format | e.g.,`json`       |
 
 Verify your configuration:
 
@@ -184,10 +185,10 @@ aws cloudformation deploy \
 
 ### CloudFormation Parameters
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `KeyName` | EC2 Key Pair for SSH access | (none) |
-| `AllowedIP` | CIDR for SSH access | `0.0.0.0/0` |
+| Parameter     | Description                 | Default       |
+| ------------- | --------------------------- | ------------- |
+| `KeyName`   | EC2 Key Pair for SSH access | (none)        |
+| `AllowedIP` | CIDR for SSH access         | `0.0.0.0/0` |
 
 ### Stack Outputs
 
