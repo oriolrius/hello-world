@@ -1,11 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: EC2 instance with SSM Session Manager access (no SSH required)
+Description: Ubuntu 24.04 EC2 instance with SSM Session Manager access (no SSH required)
 
 Parameters:
   InstanceType:
     Type: String
-    Default: t3.micro
-    Description: EC2 instance type
+    Default: t3a.micro
+    Description: EC2 instance type (AMD-based)
 
 Resources:
   # VPC
@@ -110,19 +110,19 @@ Resources:
       Roles:
         - !Ref SSMRole
 
-  # EC2 Instance
+  # EC2 Instance - Ubuntu 24.04 on AMD
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: !Ref InstanceType
-      ImageId: !Sub '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2}}'
+      ImageId: ami-03446a3af42c5e74e  # Ubuntu 24.04 LTS amd64 (eu-west-1)
       IamInstanceProfile: !Ref SSMInstanceProfile
       SubnetId: !Ref PublicSubnet
       SecurityGroupIds:
         - !Ref InstanceSecurityGroup
       Tags:
         - Key: Name
-          Value: SSM-Test-Instance
+          Value: SSM-Test-Ubuntu
 
 Outputs:
   InstanceId:
