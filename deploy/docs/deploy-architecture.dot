@@ -1,0 +1,145 @@
+digraph "Ansible Deployment Flow (v5.x)" {
+	graph [bb="0,0,437,606",
+		bgcolor=white,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=12,
+		label="Ansible Deployment Flow (v5.x)",
+		lheight=0.18,
+		lp="218.5,10.5",
+		lwidth=2.61,
+		nodesep=0.5,
+		pad=0.5,
+		rankdir=LR,
+		ranksep=0.6,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#7B8894"];
+	subgraph "cluster_EC2 Instance" {
+		graph [bb="279,29,430,598",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="EC2 Instance",
+			labeljust=l,
+			lheight=0.18,
+			lp="326.5,587.5",
+			lwidth=1.10,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		subgraph "cluster_Installed by Ansible" {
+			graph [bb="287,37,422,423",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="Installed by Ansible",
+				labeljust=l,
+				lheight=0.18,
+				lp="352.5,412.5",
+				lwidth=1.60,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			subgraph "cluster_Docker Compose" {
+				graph [bb="295,45,414,248",
+					bgcolor="#ECE8F6",
+					fontname="Sans-Serif",
+					fontsize=12,
+					label="Docker Compose",
+					labeljust=l,
+					lheight=0.18,
+					lp="354.5,237.5",
+					lwidth=1.43,
+					pencolor="#AEB6BE",
+					rankdir=LR,
+					shape=box,
+					style=rounded
+				];
+				"1ac25ee3a5a94ffa9b0167d85e614cac"	[height=2.3056,
+					image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/container/docker.png",
+					label="hello-world
+:49000",
+					pos="354.5,136",
+					shape=none,
+					width=1.4028];
+			}
+			"710c62c9dc5e4feabb6922dea6d8a468"	[height=1.9028,
+				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/container/docker.png",
+				label="Docker Engine",
+				pos="354.5,325",
+				shape=none,
+				width=1.4028];
+		}
+		"8c7d1583b94541cdb52e04827291b83b"	[height=1.9028,
+			image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/generic/os/ubuntu.png",
+			label="Ubuntu 24.04",
+			pos="354.5,500",
+			shape=none,
+			width=1.4028];
+	}
+	a18bb20b5b474c5384a20f5dec8343c0	[height=2.3056,
+		image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/iac/ansible.png",
+		label="Ansible
+playbook.yml",
+		pos="50.5,332",
+		shape=none,
+		width=1.4028];
+	a18bb20b5b474c5384a20f5dec8343c0 -> "8c7d1583b94541cdb52e04827291b83b"	[color="#48BB78",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label="1. SSH",
+		lp="197,450",
+		pos="e,355,431.43 101.12,404.25 187.71,404.25 355,404.25 355,404.25 355,404.25 355,421.43 355,421.43",
+		style=bold];
+	a18bb20b5b474c5384a20f5dec8343c0 -> "710c62c9dc5e4feabb6922dea6d8a468"	[color="#4299E1",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label="2. Install packages",
+		lp="197,335",
+		pos="e,303.84,325 101.04,325 101.04,325 293.84,325 293.84,325"];
+	a18bb20b5b474c5384a20f5dec8343c0 -> "1ac25ee3a5a94ffa9b0167d85e614cac"	[color="#9F7AEA",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label="3. docker compose up",
+		lp="197,231",
+		pos="e,355,219.29 101.12,252.75 187.71,252.75 355,252.75 355,252.75 355,252.75 355,229.29 355,229.29"];
+	ea9d550c26d1432fbb187d29c263ec81	[height=2.3056,
+		image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/registry/harbor.png",
+		label="ghcr.io
+hello-world",
+		pos="50.5,130",
+		shape=none,
+		width=1.4028];
+	ea9d550c26d1432fbb187d29c263ec81 -> "1ac25ee3a5a94ffa9b0167d85e614cac"	[color="#ED8936",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label="pull image",
+		lp="197,137",
+		pos="e,303.84,133 101.04,133 101.04,133 293.84,133 293.84,133",
+		style=dashed];
+}

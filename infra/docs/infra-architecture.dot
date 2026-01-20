@@ -1,0 +1,144 @@
+digraph "AWS Infrastructure (v5.x)" {
+	graph [bb="0,0,216,960",
+		bgcolor=white,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=12,
+		label="AWS Infrastructure (v5.x)",
+		lheight=0.18,
+		lp="108,10.5",
+		lwidth=2.10,
+		nodesep=0.5,
+		pad=0.5,
+		rankdir=TB,
+		ranksep=0.6,
+		splines=ortho
+	];
+	node [fixedsize=true,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		height=1.4,
+		imagescale=true,
+		label="\N",
+		labelloc=b,
+		shape=box,
+		style=rounded,
+		width=1.4
+	];
+	edge [color="#7B8894"];
+	subgraph "cluster_AWS (eu-west-1)" {
+		graph [bb="8,29,208,750",
+			bgcolor="#E5F5FD",
+			fontname="Sans-Serif",
+			fontsize=12,
+			label="AWS (eu-west-1)",
+			labeljust=l,
+			lheight=0.18,
+			lp="66,739.5",
+			lwidth=1.39,
+			pencolor="#AEB6BE",
+			rankdir=LR,
+			shape=box,
+			style=rounded
+		];
+		subgraph "cluster_VPC 10.0.0.0/16" {
+			graph [bb="16,37,200,524",
+				bgcolor="#EBF3E7",
+				fontname="Sans-Serif",
+				fontsize=12,
+				label="VPC 10.0.0.0/16",
+				labeljust=l,
+				lheight=0.18,
+				lp="72,513.5",
+				lwidth=1.33,
+				pencolor="#AEB6BE",
+				rankdir=LR,
+				shape=box,
+				style=rounded
+			];
+			subgraph "cluster_Public Subnet 10.0.1.0/24" {
+				graph [bb="24,45,192,298",
+					bgcolor="#ECE8F6",
+					fontname="Sans-Serif",
+					fontsize=12,
+					label="Public Subnet 10.0.1.0/24",
+					labeljust=l,
+					lheight=0.18,
+					lp="108,287.5",
+					lwidth=2.11,
+					pencolor="#AEB6BE",
+					rankdir=LR,
+					shape=box,
+					style=rounded
+				];
+				subgraph "cluster_Security Group
+ports 22, 49000" {
+					graph [bb="49,53,167,269",
+						bgcolor="#FDF7E3",
+						fontname="Sans-Serif",
+						fontsize=12,
+						label="Security Group
+ports 22, 49000",
+						labeljust=l,
+						lheight=0.36,
+						lp="104.5,252",
+						lwidth=1.32,
+						pencolor="#AEB6BE",
+						rankdir=LR,
+						shape=box,
+						style=rounded
+					];
+					d43a1695e9a8483ca6002c0361ddf637	[height=2.3056,
+						image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/compute/ec2.png",
+						label="EC2 t3.micro
+Ubuntu 24.04",
+						pos="108,144",
+						shape=none,
+						width=1.4028];
+				}
+			}
+			c9862dcfe09b472d8e9d1dd7f5995a44	[height=2.3056,
+				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/network/route-table.png",
+				label="Route Table
+0.0.0.0/0 → IGW",
+				pos="108,412",
+				shape=none,
+				width=1.4028];
+			c9862dcfe09b472d8e9d1dd7f5995a44 -> d43a1695e9a8483ca6002c0361ddf637	[color="#4299E1",
+				dir=forward,
+				fontcolor="#2D3436",
+				fontname="Sans-Serif",
+				fontsize=13,
+				pos="e,108,227.28 108,328.67 108,328.67 108,237.28 108,237.28"];
+		}
+		"95307b363dce49ad981050f3c8917003"	[height=2.3056,
+			image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/network/internet-gateway.png",
+			label="Internet
+Gateway",
+			pos="108,638",
+			shape=none,
+			width=1.4028];
+		"95307b363dce49ad981050f3c8917003" -> c9862dcfe09b472d8e9d1dd7f5995a44	[color="#4299E1",
+			dir=forward,
+			fontcolor="#2D3436",
+			fontname="Sans-Serif",
+			fontsize=13,
+			pos="e,108,495.02 108,554.81 108,554.81 108,505.02 108,505.02"];
+	}
+	"6add2b47358643208be5986da194e0be"	[height=2.3056,
+		image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/client/users.png",
+		label="Internet
+Users",
+		pos="108,877",
+		shape=none,
+		width=1.4028];
+	"6add2b47358643208be5986da194e0be" -> "95307b363dce49ad981050f3c8917003"	[color="#4299E1",
+		dir=forward,
+		fontcolor="#2D3436",
+		fontname="Sans-Serif",
+		fontsize=13,
+		label="HTTP :49000",
+		lp="150,765",
+		pos="e,108,721.36 108,793.74 108,793.74 108,731.36 108,731.36"];
+}
