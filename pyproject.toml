@@ -1,6 +1,6 @@
 [project]
 name = "hello-world"
-version = "6.3.2"
+version = "6.3.3"
 description = "Simple hello-world web server"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -32,10 +32,10 @@ select = ["E", "F", "I", "W"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "6.3.2"
+version = "6.3.3"
 version_files = [
     "pyproject.toml:^version"
 ]
 tag_format = "v$version"
-update_changelog_on_bump = true
+update_changelog_on_bump = false
 major_version_zero = false
