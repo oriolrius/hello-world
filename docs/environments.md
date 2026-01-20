@@ -36,6 +36,7 @@ There are **three common patterns** used in real-world deployments:
 **Used by:** GitLab, Netlify, Vercel, Heroku, many startups
 
 **Real-world examples:**
+
 - **GitLab** - Their [Auto DevOps](https://docs.gitlab.com/ee/topics/autodevops/) uses branch names to determine environments
 - **Netlify/Vercel** - `main` → production, PRs → preview environments
 - **Heroku Pipelines** - `development` → `staging` → `production` apps linked to branches
@@ -74,6 +75,7 @@ jobs:
 ```
 
 **Flow:**
+
 ```
 git push origin main           → deploys to dev
 git push origin release/1.2    → deploys to staging
@@ -87,6 +89,7 @@ git tag v1.2.0 && git push --tags → deploys to production
 **Used by:** Google, Spotify, Netflix, Airbnb, most mature tech companies
 
 **Real-world examples:**
+
 - **Google** - [Site Reliability Engineering book](https://sre.google/sre-book/release-engineering/) describes progressive rollouts with automated canaries
 - **Spotify** - Uses [Backstage](https://backstage.io/) with progressive delivery pipelines
 - **Netflix** - [Spinnaker](https://spinnaker.io/) (which they created) implements progressive deployment with automated canary analysis
@@ -94,6 +97,7 @@ git tag v1.2.0 && git push --tags → deploys to production
 - **GitHub** - Uses [GitHub Actions environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) with protection rules (this exact pattern)
 
 **Open Source References:**
+
 - [Argo Rollouts](https://argoproj.github.io/rollouts/) - Kubernetes progressive delivery controller
 - [Flagger](https://flagger.app/) - Progressive delivery for Kubernetes (Weaveworks)
 - [Spinnaker](https://spinnaker.io/) - Multi-cloud continuous delivery (Netflix)
@@ -194,10 +198,10 @@ jobs:
 
 **GitHub Environment Configuration:**
 
-| Environment | Protection Rules |
-|-------------|-----------------|
-| `dev` | None - auto-deploy |
-| `staging` | Required reviewers: QA team |
+| Environment    | Protection Rules                              |
+| -------------- | --------------------------------------------- |
+| `dev`        | None - auto-deploy                            |
+| `staging`    | Required reviewers: QA team                   |
 | `production` | Required reviewers: DevOps + 15min wait timer |
 
 ---
@@ -207,18 +211,21 @@ jobs:
 **Used by:** Amazon, Microsoft, large enterprises, regulated industries (finance, healthcare)
 
 **Real-world examples:**
+
 - **Amazon** - Described in [AWS Well-Architected](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_tracking_change_management_planned_changemgmt.html) - immutable artifacts promoted through environments
 - **Microsoft Azure DevOps** - [Release pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/release/) with manual approvals and artifact promotion
 - **JFrog Artifactory** - [Release bundles](https://jfrog.com/help/r/jfrog-distribution-documentation/release-bundles) - promote immutable artifacts between repos (dev → staging → prod)
 - **Financial Services** - Required by SOX/PCI compliance - same artifact must be deployed to prod that was tested in staging
 
 **Open Source References:**
+
 - [JFrog Artifactory](https://jfrog.com/artifactory/) - Artifact promotion between repositories
 - [Harbor](https://goharbor.io/) - Container registry with artifact promotion
 - [Nexus Repository](https://www.sonatype.com/products/nexus-repository) - Artifact lifecycle management
 - [AWS CodePipeline](https://aws.amazon.com/codepipeline/) - Manual approval stages between environments
 
 **Why enterprises prefer this:**
+
 - **Auditability** - Same SHA deployed everywhere, traceable
 - **Compliance** - Proof that prod artifact was tested in staging
 - **Rollback** - Simply redeploy previous artifact
@@ -295,11 +302,13 @@ jobs:
 ### Validation Gates Between Environments
 
 **Industry References:**
+
 - **Google Testing Blog** - [Testing at Google Scale](https://testing.googleblog.com/)
 - **Martin Fowler** - [Deployment Pipeline](https://martinfowler.com/bliki/DeploymentPipeline.html)
-- **Continuous Delivery book** - [Jez Humble & David Farley](https://continuousdelivery.com/)
+- **Continuous Delivery book** - [Jez Humble &amp; David Farley](https://continuousdelivery.com/)
 
 **Testing Tools Used:**
+
 - **Smoke/Health:** curl, httpie, [k6](https://k6.io/)
 - **Integration:** [Postman/Newman](https://www.postman.com/), [REST Assured](https://rest-assured.io/)
 - **E2E:** [Playwright](https://playwright.dev/), [Cypress](https://www.cypress.io/), [Selenium](https://www.selenium.dev/)
@@ -308,12 +317,12 @@ jobs:
 
 #### What Gets Validated at Each Stage
 
-| Stage | Validation | Automated? |
-|-------|-----------|------------|
-| **PR → main** | Lint, unit tests, security scan | ✅ Yes |
-| **main → dev** | Smoke tests, deployment health | ✅ Yes |
-| **dev → staging** | Integration tests, E2E tests, performance | ✅ Yes |
-| **staging → prod** | Manual QA sign-off, security review, change approval | ❌ No |
+| Stage                     | Validation                                           | Automated? |
+| ------------------------- | ---------------------------------------------------- | ---------- |
+| **PR → main**      | Lint, unit tests, security scan                      | ✅ Yes     |
+| **main → dev**     | Smoke tests, deployment health                       | ✅ Yes     |
+| **dev → staging**  | Integration tests, E2E tests, performance            | ✅ Yes     |
+| **staging → prod** | Manual QA sign-off, security review, change approval | ❌ No      |
 
 #### Example Validation Job
 
@@ -395,6 +404,7 @@ A common question: **Do companies provision real infrastructure during CI/CD tes
 **How it works:** Spin up isolated, real infrastructure for each PR. Tear down after tests complete or PR merges.
 
 **Real-world examples:**
+
 - **Vercel/Netlify** - Every PR gets a unique preview URL with real deployment
 - **Shopify** - Full ephemeral environments per PR using their internal "Spin" tool
 - **GitHub** - Review labs create K8s namespaces per PR
@@ -451,12 +461,14 @@ jobs:
 ```
 
 **Pros:**
+
 - Complete isolation between PRs
 - Tests against real infrastructure configuration
 - No "works on my machine" issues
 - QA can review before merge
 
 **Cons:**
+
 - Expensive (multiply infrastructure costs by active PRs)
 - Slower CI (provisioning takes time)
 - Complex cleanup logic
@@ -500,16 +512,19 @@ jobs:
 ```
 
 **Pros:**
+
 - Lower cost (one environment, not N)
 - Faster feedback (no provisioning)
 - Simpler infrastructure
 
 **Cons:**
+
 - Tests can conflict if multiple PRs deploy simultaneously
 - Need concurrency controls
 - Environment can become "dirty" over time
 
 **Mitigation strategies:**
+
 - Use `concurrency` groups to serialize deployments
 - Implement test isolation (unique test data per run)
 - Schedule nightly environment resets
@@ -636,13 +651,14 @@ jobs:
 **How it works:** Use tools that emulate cloud services locally or in CI without real cloud costs.
 
 **Tools:**
-| Tool | Emulates | Best For |
-|------|----------|----------|
-| [LocalStack](https://localstack.cloud/) | AWS (S3, DynamoDB, Lambda, etc.) | AWS-heavy apps |
-| [MinIO](https://min.io/) | S3-compatible storage | Object storage |
-| [Testcontainers](https://testcontainers.com/) | Databases, queues, caches | Integration tests |
-| [Kind](https://kind.sigs.k8s.io/) / [k3d](https://k3d.io/) | Kubernetes clusters | K8s deployments |
-| [WireMock](https://wiremock.org/) | HTTP APIs | External service mocks |
+
+| Tool                                                 | Emulates                         | Best For               |
+| ---------------------------------------------------- | -------------------------------- | ---------------------- |
+| [LocalStack](https://localstack.cloud/)                 | AWS (S3, DynamoDB, Lambda, etc.) | AWS-heavy apps         |
+| [MinIO](https://min.io/)                                | S3-compatible storage            | Object storage         |
+| [Testcontainers](https://testcontainers.com/)           | Databases, queues, caches        | Integration tests      |
+| [Kind](https://kind.sigs.k8s.io/) / [k3d](https://k3d.io/) | Kubernetes clusters              | K8s deployments        |
+| [WireMock](https://wiremock.org/)                       | HTTP APIs                        | External service mocks |
 
 ```yaml
 # LocalStack example for AWS testing without real AWS
@@ -670,12 +686,14 @@ integration-tests:
 ```
 
 **Pros:**
+
 - Zero cloud costs
 - Fast (no network latency to cloud)
 - Works offline
 - Deterministic (no external state)
 
 **Cons:**
+
 - Not 100% feature parity with real services
 - Can miss cloud-specific edge cases
 - Still need real infrastructure tests before production
@@ -684,16 +702,16 @@ integration-tests:
 
 #### When to Provision Real Infrastructure: Decision Matrix
 
-| Test Type | Infrastructure | When | Examples |
-|-----------|---------------|------|----------|
-| Unit tests | None | Always | Jest, pytest, go test |
-| Contract tests | Mocked | Always | Pact, Spring Cloud Contract |
-| Component tests | Containers | PR + main | Testcontainers, Docker Compose |
-| Integration tests | Shared dev | main branch | Against real dev environment |
-| E2E tests | Shared or ephemeral | Pre-merge or post-merge | Playwright, Cypress |
-| Performance tests | Dedicated staging | Release candidates | k6, Gatling |
-| Security tests | Staging mirror | Release candidates | OWASP ZAP, Burp |
-| Chaos tests | Production | Controlled windows | Chaos Monkey, Litmus |
+| Test Type         | Infrastructure      | When                    | Examples                       |
+| ----------------- | ------------------- | ----------------------- | ------------------------------ |
+| Unit tests        | None                | Always                  | Jest, pytest, go test          |
+| Contract tests    | Mocked              | Always                  | Pact, Spring Cloud Contract    |
+| Component tests   | Containers          | PR + main               | Testcontainers, Docker Compose |
+| Integration tests | Shared dev          | main branch             | Against real dev environment   |
+| E2E tests         | Shared or ephemeral | Pre-merge or post-merge | Playwright, Cypress            |
+| Performance tests | Dedicated staging   | Release candidates      | k6, Gatling                    |
+| Security tests    | Staging mirror      | Release candidates      | OWASP ZAP, Burp                |
+| Chaos tests       | Production          | Controlled windows      | Chaos Monkey, Litmus           |
 
 ---
 
@@ -721,26 +739,26 @@ Low ───┴─────────────────────�
 
 **Industry benchmarks (approximate):**
 
-| Company Size | Typical Strategy | Monthly Infra Cost (non-prod) |
-|--------------|------------------|-------------------------------|
-| Startup (<20 eng) | Shared staging only | $100-500 |
-| Growth (20-100 eng) | Shared + on-demand ephemeral | $1,000-5,000 |
-| Enterprise (100+ eng) | Full ephemeral per PR | $10,000-50,000+ |
+| Company Size          | Typical Strategy             | Monthly Infra Cost (non-prod) |
+| --------------------- | ---------------------------- | ----------------------------- |
+| Startup (<20 eng)     | Shared staging only          | $100-500                      |
+| Growth (20-100 eng)   | Shared + on-demand ephemeral | $1,000-5,000                  |
+| Enterprise (100+ eng) | Full ephemeral per PR        | $10,000-50,000+               |
 
 ---
 
 #### Real Company Approaches
 
-| Company | Strategy | Details |
-|---------|----------|---------|
+| Company           | Strategy                    | Details                                                                                                       |
+| ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | **Netflix** | Hybrid + Production testing | Uses Spinnaker for progressive delivery. Tests against production with traffic shadowing and canary analysis. |
-| **Spotify** | Ephemeral K8s namespaces | Creates isolated namespaces per PR using Backstage. Auto-cleanup after 24h. |
-| **Shopify** | Full ephemeral (Spin) | Internal tool "Spin" provisions complete environments per developer/PR. |
-| **GitHub** | Ephemeral "Review Labs" | K8s namespaces with real databases per PR. Uses GitHub Actions. |
-| **Stripe** | Ephemeral for payments | Critical payment flows get dedicated test infrastructure. |
-| **Google** | Mocks + shared + prod | Heavy use of hermetic tests (mocks), shared staging, and production canaries. |
-| **Amazon** | Cell-based isolation | Each team has isolated "cells" that can be provisioned on-demand. |
-| **Airbnb** | Feature-flag + staging | Heavy use of feature flags to test in shared staging safely. |
+| **Spotify** | Ephemeral K8s namespaces    | Creates isolated namespaces per PR using Backstage. Auto-cleanup after 24h.                                   |
+| **Shopify** | Full ephemeral (Spin)       | Internal tool "Spin" provisions complete environments per developer/PR.                                       |
+| **GitHub**  | Ephemeral "Review Labs"     | K8s namespaces with real databases per PR. Uses GitHub Actions.                                               |
+| **Stripe**  | Ephemeral for payments      | Critical payment flows get dedicated test infrastructure.                                                     |
+| **Google**  | Mocks + shared + prod       | Heavy use of hermetic tests (mocks), shared staging, and production canaries.                                 |
+| **Amazon**  | Cell-based isolation        | Each team has isolated "cells" that can be provisioned on-demand.                                             |
+| **Airbnb**  | Feature-flag + staging      | Heavy use of feature flags to test in shared staging safely.                                                  |
 
 ---
 
@@ -799,12 +817,12 @@ Low ───┴─────────────────────�
 
 Configure in: **Settings → Environments → [env name] → Protection rules**
 
-| Rule | Dev | Staging | Production |
-|------|-----|---------|------------|
-| Required reviewers | ❌ | ✅ 1 reviewer | ✅ 2 reviewers |
-| Wait timer | ❌ | ❌ | ✅ 15 minutes |
-| Deployment branches | `main` | `main`, `release/*` | tags only |
-| Secrets | DEV_* | STAGING_* | PROD_* |
+| Rule                | Dev      | Staging                 | Production     |
+| ------------------- | -------- | ----------------------- | -------------- |
+| Required reviewers  | ❌       | ✅ 1 reviewer           | ✅ 2 reviewers |
+| Wait timer          | ❌       | ❌                      | ✅ 15 minutes  |
+| Deployment branches | `main` | `main`, `release/*` | tags only      |
+| Secrets             | DEV_*    | STAGING_*               | PROD_*         |
 
 ---
 
@@ -831,13 +849,13 @@ rollback:
 
 ### Summary: When Does Each Environment Get Deployed?
 
-| Trigger | Dev | Staging | Production |
-|---------|-----|---------|------------|
-| Push to `main` | ✅ Auto | ❌ | ❌ |
-| Push to `release/*` | ❌ | ✅ After approval | ❌ |
-| Push tag `v*` | ❌ | ❌ | ✅ After approval |
-| Manual dispatch | ✅ | ✅ After approval | ✅ After approval |
-| Scheduled (nightly) | ✅ | Optional | ❌ Never |
+| Trigger               | Dev     | Staging           | Production        |
+| --------------------- | ------- | ----------------- | ----------------- |
+| Push to `main`      | ✅ Auto | ❌                | ❌                |
+| Push to `release/*` | ❌      | ✅ After approval | ❌                |
+| Push tag `v*`       | ❌      | ❌                | ✅ After approval |
+| Manual dispatch       | ✅      | ✅ After approval | ✅ After approval |
+| Scheduled (nightly)   | ✅      | Optional          | ❌ Never          |
 
 ---
 
@@ -847,11 +865,11 @@ This proposal outlines how to introduce environment separation (dev, staging, pr
 
 ## Environment Strategy
 
-| Environment | Purpose | Deployment Trigger |
-|-------------|---------|-------------------|
-| **dev** | Development/testing, frequent deploys | Push to branch, manual |
-| **staging** | Pre-production validation, mirrors prod | PR merge, manual |
-| **production** | Live traffic, stable releases | Tag push (v*), manual approval |
+| Environment          | Purpose                                 | Deployment Trigger             |
+| -------------------- | --------------------------------------- | ------------------------------ |
+| **dev**        | Development/testing, frequent deploys   | Push to branch, manual         |
+| **staging**    | Pre-production validation, mirrors prod | PR merge, manual               |
+| **production** | Live traffic, stable releases           | Tag push (v*), manual approval |
 
 ---
 
@@ -880,10 +898,10 @@ ENV = os.getenv("HELLO_WORLD_ENV", "development")
 ### Implementation
 
 1. **Create GitHub Environments** (Settings → Environments):
+
    - `dev` - no protection rules
    - `staging` - require reviewers
    - `production` - require reviewers + wait timer
-
 2. **Modify workflow** to accept environment input:
 
 ```yaml
@@ -908,6 +926,7 @@ jobs:
    - Different version suffixes: `v2.1.0-dev`, `v2.1.0-staging`, `v2.1.0`
 
 ### Files to create/modify
+
 - `.github/workflows/release.yml` - add environment input
 - No infrastructure changes needed (v2.x only builds artifacts)
 
@@ -922,10 +941,10 @@ jobs:
 ### Implementation
 
 1. **Stack naming convention:**
+
    - `hello-world-dev`
    - `hello-world-staging`
    - `hello-world-production`
-
 2. **Environment-specific parameters:**
 
 ```yaml
@@ -977,6 +996,7 @@ aws cloudformation deploy \
 ```
 
 ### Files to create
+
 - `infra/environments/dev.json`
 - `infra/environments/staging.json`
 - `infra/environments/production.json`
@@ -1039,6 +1059,7 @@ ansible-playbook -i deploy/inventory/production.ini deploy/playbook.yml
 ```
 
 ### Files to create
+
 - `deploy/inventory/dev.ini`
 - `deploy/inventory/staging.ini`
 - `deploy/inventory/production.ini`
@@ -1115,6 +1136,7 @@ docker compose -f docker/docker-compose.yml -f docker/docker-compose.production.
 ```
 
 ### Files to create
+
 - `docker/docker-compose.dev.yml`
 - `docker/docker-compose.staging.yml`
 - `docker/docker-compose.production.yml`
@@ -1227,15 +1249,16 @@ kubectl apply -k k8s/overlays/production
 
 #### Option B: Separate Clusters (Production-grade)
 
-| Cluster | Environments |
-|---------|--------------|
-| `esade-teaching-dev` | dev |
-| `esade-teaching-staging` | staging |
-| `esade-teaching-prod` | production |
+| Cluster                    | Environments |
+| -------------------------- | ------------ |
+| `esade-teaching-dev`     | dev          |
+| `esade-teaching-staging` | staging      |
+| `esade-teaching-prod`    | production   |
 
 More expensive but provides complete isolation.
 
 ### Files to create
+
 - `k8s/base/` - move existing manifests here
 - `k8s/overlays/dev/`
 - `k8s/overlays/staging/`
@@ -1283,14 +1306,14 @@ jobs:
 
 ## Summary by Branch
 
-| Branch | Infrastructure | Environment Strategy |
-|--------|---------------|---------------------|
-| v1.x | None | N/A (local only) |
-| v2.x | GitHub Actions | GitHub Environments + workflow inputs |
-| v3.x | CloudFormation | Separate stacks + parameter files |
-| v4.x | CloudFormation + Ansible | Stacks + Ansible inventory per env |
-| v5.x | Docker Compose | Compose overrides + .env files |
-| v6.x | EKS + Kubernetes | Kustomize overlays (namespaces or clusters) |
+| Branch | Infrastructure           | Environment Strategy                  |
+| ------ | ------------------------ | ------------------------------------- |
+| v1.x   | None                     | N/A (local only)                      |
+| v2.x   | GitHub Actions           | GitHub Environments + workflow inputs |
+| v3.x   | CloudFormation           | Separate stacks + parameter files     |
+| v4.x   | CloudFormation + Ansible | Stacks + Ansible inventory per env    |
+| v5.x   | Docker Compose           | Compose overrides + .env files        |
+| v6.x   | EKS + Kubernetes         | ` overlays (namespaces or clusters)   |
 
 ---
 
@@ -1307,11 +1330,11 @@ jobs:
 
 ## Cost Considerations
 
-| Environment | Resources | Est. Monthly Cost |
-|-------------|-----------|-------------------|
-| dev | Minimal (t3.micro, 1 pod) | ~$20 |
-| staging | Mirror prod (reduced scale) | ~$50 |
-| production | Full scale | ~$184 (EKS) |
+| Environment | Resources                   | Est. Monthly Cost |
+| ----------- | --------------------------- | ----------------- |
+| dev         | Minimal (t3.micro, 1 pod)   | ~$20              |
+| staging     | Mirror prod (reduced scale) | ~$50              |
+| production  | Full scale                  | ~$184 (EKS)       |
 
 **Tip:** Use AWS Savings Plans or Spot Instances for dev/staging to reduce costs.
 
@@ -1320,64 +1343,72 @@ jobs:
 ## References & Further Reading
 
 ### Books
-| Book | Author | Topics |
-|------|--------|--------|
-| [Continuous Delivery](https://continuousdelivery.com/) | Jez Humble, David Farley | Deployment pipelines, environments, testing |
-| [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/) | Google | Release engineering, progressive rollouts |
-| [Accelerate](https://itrevolution.com/accelerate-book/) | Nicole Forsgren et al. | DevOps metrics, deployment frequency |
-| [The Phoenix Project](https://itrevolution.com/the-phoenix-project/) | Gene Kim et al. | DevOps transformation (novel) |
+
+| Book                                                                        | Author                   | Topics                                      |
+| --------------------------------------------------------------------------- | ------------------------ | ------------------------------------------- |
+| [Continuous Delivery](https://continuousdelivery.com/)                         | Jez Humble, David Farley | Deployment pipelines, environments, testing |
+| [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/) | Google                   | Release engineering, progressive rollouts   |
+| [Accelerate](https://itrevolution.com/accelerate-book/)                        | Nicole Forsgren et al.   | DevOps metrics, deployment frequency        |
+| [The Phoenix Project](https://itrevolution.com/the-phoenix-project/)           | Gene Kim et al.          | DevOps transformation (novel)               |
 
 ### Company Engineering Blogs
-| Company | Blog | Notable Articles |
-|---------|------|-----------------|
-| Netflix | [netflixtechblog.com](https://netflixtechblog.com/) | Spinnaker, canary deployments |
-| Spotify | [engineering.atspotify.com](https://engineering.atspotify.com/) | Backstage, CI/CD |
-| Airbnb | [medium.com/airbnb-engineering](https://medium.com/airbnb-engineering) | Feature flags, staged rollouts |
-| GitHub | [github.blog/engineering](https://github.blog/category/engineering/) | GitHub Actions, environments |
-| Etsy | [etsy.com/codeascraft](https://www.etsy.com/codeascraft) | Continuous deployment pioneers |
+
+| Company | Blog                                                                | Notable Articles               |
+| ------- | ------------------------------------------------------------------- | ------------------------------ |
+| Netflix | [netflixtechblog.com](https://netflixtechblog.com/)                    | Spinnaker, canary deployments  |
+| Spotify | [engineering.atspotify.com](https://engineering.atspotify.com/)        | Backstage, CI/CD               |
+| Airbnb  | [medium.com/airbnb-engineering](https://medium.com/airbnb-engineering) | Feature flags, staged rollouts |
+| GitHub  | [github.blog/engineering](https://github.blog/category/engineering/)   | GitHub Actions, environments   |
+| Etsy    | [etsy.com/codeascraft](https://www.etsy.com/codeascraft)               | Continuous deployment pioneers |
 
 ### Open Source Tools by Category
 
 #### CI/CD Platforms
-| Tool | Description | Best For |
-|------|-------------|----------|
-| [GitHub Actions](https://github.com/features/actions) | Native GitHub CI/CD | GitHub-hosted projects |
-| [GitLab CI](https://docs.gitlab.com/ee/ci/) | Integrated GitLab CI/CD | GitLab users |
-| [Jenkins](https://www.jenkins.io/) | Self-hosted CI/CD | Enterprise, customization |
-| [CircleCI](https://circleci.com/) | Cloud CI/CD | Fast builds, Docker |
-| [Tekton](https://tekton.dev/) | Kubernetes-native CI/CD | K8s environments |
+
+| Tool                                               | Description             | Best For                  |
+| -------------------------------------------------- | ----------------------- | ------------------------- |
+| [GitHub Actions](https://github.com/features/actions) | Native GitHub CI/CD     | GitHub-hosted projects    |
+| [GitLab CI](https://docs.gitlab.com/ee/ci/)           | Integrated GitLab CI/CD | GitLab users              |
+| [Jenkins](https://www.jenkins.io/)                    | Self-hosted CI/CD       | Enterprise, customization |
+| [CircleCI](https://circleci.com/)                     | Cloud CI/CD             | Fast builds, Docker       |
+| [Tekton](https://tekton.dev/)                         | Kubernetes-native CI/CD | K8s environments          |
 
 #### Progressive Delivery
-| Tool | Description | Best For |
-|------|-------------|----------|
-| [Argo Rollouts](https://argoproj.github.io/rollouts/) | K8s progressive delivery | Canary, blue-green |
-| [Flagger](https://flagger.app/) | K8s progressive delivery | Service mesh integration |
-| [Spinnaker](https://spinnaker.io/) | Multi-cloud CD | Enterprise, multi-cloud |
-| [LaunchDarkly](https://launchdarkly.com/) | Feature flags | Feature-based rollouts |
+
+| Tool                                               | Description              | Best For                 |
+| -------------------------------------------------- | ------------------------ | ------------------------ |
+| [Argo Rollouts](https://argoproj.github.io/rollouts/) | K8s progressive delivery | Canary, blue-green       |
+| [Flagger](https://flagger.app/)                       | K8s progressive delivery | Service mesh integration |
+| [Spinnaker](https://spinnaker.io/)                    | Multi-cloud CD           | Enterprise, multi-cloud  |
+| [LaunchDarkly](https://launchdarkly.com/)             | Feature flags            | Feature-based rollouts   |
 
 #### Artifact Management
-| Tool | Description | Best For |
-|------|-------------|----------|
-| [Harbor](https://goharbor.io/) | Container registry | K8s, security scanning |
-| [JFrog Artifactory](https://jfrog.com/artifactory/) | Universal artifact repo | Enterprise, promotion |
-| [GitHub Packages](https://github.com/features/packages) | GitHub-native registry | GitHub projects |
-| [AWS ECR](https://aws.amazon.com/ecr/) | AWS container registry | AWS deployments |
+
+| Tool                                                 | Description             | Best For               |
+| ---------------------------------------------------- | ----------------------- | ---------------------- |
+| [Harbor](https://goharbor.io/)                          | Container registry      | K8s, security scanning |
+| [JFrog Artifactory](https://jfrog.com/artifactory/)     | Universal artifact repo | Enterprise, promotion  |
+| [GitHub Packages](https://github.com/features/packages) | GitHub-native registry  | GitHub projects        |
+| [AWS ECR](https://aws.amazon.com/ecr/)                  | AWS container registry  | AWS deployments        |
 
 #### Infrastructure as Code
-| Tool | Description | Best For |
-|------|-------------|----------|
-| [Terraform](https://www.terraform.io/) | Multi-cloud IaC | Cloud-agnostic |
-| [Pulumi](https://www.pulumi.com/) | IaC with programming languages | Developers |
-| [AWS CDK](https://aws.amazon.com/cdk/) | AWS IaC with code | AWS-focused |
-| [Crossplane](https://www.crossplane.io/) | K8s-native IaC | K8s environments |
+
+| Tool                                  | Description                    | Best For         |
+| ------------------------------------- | ------------------------------ | ---------------- |
+| [Terraform](https://www.terraform.io/)   | Multi-cloud IaC                | Cloud-agnostic   |
+| [Pulumi](https://www.pulumi.com/)        | IaC with programming languages | Developers       |
+| [AWS CDK](https://aws.amazon.com/cdk/)   | AWS IaC with code              | AWS-focused      |
+| [Crossplane](https://www.crossplane.io/) | K8s-native IaC                 | K8s environments |
 
 ### GitHub Actions Specific
+
 - [Environments documentation](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)
 - [Reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
 - [Required reviewers](https://docs.github.com/en/actions/managing-workflow-runs/reviewing-deployments)
 - [Wait timer](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#wait-timer)
 
 ### Kubernetes Specific
+
 - [Kustomize overlays](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/)
 - [Helm values per environment](https://helm.sh/docs/chart_template_guide/values_files/)
 - [Namespace-based multi-tenancy](https://kubernetes.io/docs/concepts/security/multi-tenancy/)
