@@ -1,6 +1,6 @@
 services:
   hello-world:
-    image: ghcr.io/oriolrius/hello-world:latest
+    image: ghcr.io/oriolrius/hello-world:v5
     ports:
       - "49000:49000"
     restart: unless-stopped
