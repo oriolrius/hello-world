@@ -1,3 +1,10 @@
+## v5.3.2 (2026-01-21)
+
+### Fix
+
+- **docker**: reference v5 image tag instead of latest
+- **ci**: use semantic version tags without latest
+
 ## v5.3.1 (2026-01-21)
 
 ## v5.3.0 (2026-01-20)
