@@ -24,6 +24,92 @@ cd tools/k9s
 ./run-k9s.sh
 ```
 
+## Prerequisites: Configure kubectl for EKS
+
+Before using k9s, you need to configure kubectl to connect to your EKS cluster.
+
+### 1. List available EKS clusters
+
+```bash
+# List all EKS clusters in the region
+aws eks list-clusters --region eu-west-1
+
+# Output:
+# {
+#     "clusters": [
+#         "esade-teaching"
+#     ]
+# }
+```
+
+### 2. Get cluster details
+
+```bash
+# Get cluster info (endpoint, version, status)
+aws eks describe-cluster --name esade-teaching --region eu-west-1 \
+  --query 'cluster.{name:name,status:status,version:version,endpoint:endpoint}'
+
+# Using eksctl
+eksctl get cluster --region eu-west-1
+```
+
+### 3. Configure kubectl (update kubeconfig)
+
+```bash
+# Add/update the cluster context in ~/.kube/config
+aws eks update-kubeconfig --name esade-teaching --region eu-west-1
+
+# Output:
+# Added new context arn:aws:eks:eu-west-1:<account-id>:cluster/esade-teaching to ~/.kube/config
+```
+
+### 4. Verify kubectl configuration
+
+```bash
+# List all configured contexts
+kubectl config get-contexts
+
+# Output:
+# CURRENT   NAME                                                        CLUSTER                                                     ...
+# *         arn:aws:eks:eu-west-1:123456789:cluster/esade-teaching      arn:aws:eks:eu-west-1:123456789:cluster/esade-teaching      ...
+
+# Show current context
+kubectl config current-context
+
+# Test connection
+kubectl cluster-info
+```
+
+### 5. Discover namespaces
+
+```bash
+# List all namespaces
+kubectl get namespaces
+
+# Output:
+# NAME              STATUS   AGE
+# default           Active   2h
+# hello-world       Active   1h
+# kube-system       Active   2h
+# ...
+
+# List resources in a namespace
+kubectl get all -n hello-world
+```
+
+### 6. Switch context (if multiple clusters)
+
+```bash
+# List contexts
+kubectl config get-contexts
+
+# Switch to a different context
+kubectl config use-context <context-name>
+
+# Or specify context per command
+kubectl get pods --context <context-name> -n hello-world
+```
+
 ## Quick Start
 
 ```bash
