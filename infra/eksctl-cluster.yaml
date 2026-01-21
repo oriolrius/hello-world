@@ -8,7 +8,7 @@ metadata:
 
 managedNodeGroups:
   - name: students
-    instanceType: t3.medium
+    instanceType: t3a.small
     desiredCapacity: 2
     minSize: 1
     maxSize: 3
