@@ -33,8 +33,8 @@ cd tools/k9s
 # Run k9s for a specific namespace
 ./k9s -n hello-world
 
-# Run k9s for a specific context
-./k9s --context arn:aws:eks:eu-west-1:753916465480:cluster/esade-teaching
+# Run k9s for a specific context (use kubectl config get-contexts to list)
+./k9s --context <your-context-name>
 ```
 
 ## Key Navigation
