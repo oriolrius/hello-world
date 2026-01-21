@@ -1,13 +1,15 @@
-# Basic Auth Proxy for Headlamp
+# OPTIONAL: Basic Auth Proxy for Headlamp
+#
+# This is OPTIONAL. By default, Headlamp is exposed directly via LoadBalancer
+# with token-based authentication only. Deploy this if you need an additional
+# HTTP Basic Authentication layer.
+#
+# Usage: kubectl apply -f basic-auth-proxy.yaml
+#
 # Provides HTTP Basic Authentication (admin / The2password.)
 #
-# Why nginx proxy?
-# - Headlamp uses token-based auth, not username/password
-# - nginx adds HTTP Basic Auth layer before reaching Headlamp
-# - User authenticates twice: Basic Auth (nginx) + Token (Headlamp)
-#
-# Architecture:
-#   User -> LoadBalancer:49100 -> nginx (basic auth) -> headlamp:80
+# Architecture with proxy:
+#   User -> LoadBalancer:49100 -> nginx (basic auth) -> headlamp:80 -> K8s API
 
 ---
 # ConfigMap containing htpasswd file

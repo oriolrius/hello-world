@@ -8,19 +8,14 @@
 User Browser
      |
      v
-AWS LoadBalancer:49100
+AWS LoadBalancer:80
      |
      v
-nginx (Basic Auth)  ─────────────────────┐
-  - Username: admin                      │
-  - Password: The2password.              │
-     |                                   │
-     v                                   │
-Headlamp (Token Auth)                    │
-  - Token from admin-user ServiceAccount │
-     |                                   │
-     v                                   │
-Kubernetes API Server <──────────────────┘
+Headlamp (Token Auth)
+  - Token from admin-user ServiceAccount
+     |
+     v
+Kubernetes API Server
 ```
 
 ## Prerequisites
@@ -89,8 +84,8 @@ helm upgrade --install headlamp headlamp/headlamp \
 | Parameter | Value | Why |
 |-----------|-------|-----|
 | `config.inCluster` | `true` | Headlamp runs inside cluster, uses ServiceAccount for API access |
-| `service.type` | `ClusterIP` | Internal only, nginx proxy exposes externally |
-| `service.port` | `80` | Default HTTP port, proxied by nginx |
+| `service.type` | `LoadBalancer` | Exposes Headlamp directly via AWS ELB |
+| `service.port` | `80` | Default HTTP port |
 | `serviceAccount.create` | `true` | Required for Headlamp to access Kubernetes API |
 | `clusterRoleBinding.clusterRoleName` | `cluster-admin` | Full cluster access for dashboard |
 
@@ -113,50 +108,17 @@ kubectl apply -f admin-user.yaml
 - ServiceAccount provides a token that grants API access
 - ClusterRoleBinding defines what the token can do
 
-### Step 5: Deploy basic auth proxy
-
-```bash
-kubectl apply -f basic-auth-proxy.yaml
-```
-
-**Source:** `basic-auth-proxy.yaml`
-
-| Resource | Purpose |
-|----------|---------|
-| `ConfigMap/basic-auth-htpasswd` | Stores `admin:The2password.` credentials |
-| `ConfigMap/nginx-config` | nginx configuration for proxy |
-| `Deployment/headlamp-proxy` | nginx container with basic auth |
-| `Service/headlamp-proxy` | LoadBalancer on port 49100 |
-
-**Why nginx proxy?**
-- Headlamp uses token auth, not username/password
-- nginx adds HTTP Basic Auth layer
-- Allows "admin / The2password." authentication requirement
-- Proxies authenticated requests to Headlamp
-
-**How htpasswd was generated:**
-```bash
-htpasswd -nb admin 'The2password.'
-# Output: admin:$apr1$6r/qWWIV$bsDcC/XvWiHNWLKuN2IIl1
-```
-
 ## Access the Dashboard
 
 ### Get the URL
 
 ```bash
-kubectl get svc headlamp-proxy -n headlamp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+kubectl get svc headlamp -n headlamp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 ```
 
-The URL format is: `http://<loadbalancer-hostname>:49100`
+The URL format is: `http://<loadbalancer-hostname>`
 
-### Authentication (2 steps)
-
-**Step 1: Basic Auth (nginx)**
-- Username: `admin`
-- Password: `The2password.`
-
-**Step 2: Token Auth (Headlamp)**
+### Authentication
 
 Get the token:
 ```bash
@@ -167,48 +129,22 @@ Paste the token in Headlamp's login screen.
 
 ## Configuration Reference
 
-### Port 49100
+### Service Type
 
-Defined in `basic-auth-proxy.yaml`:
+Defined in `values.yaml`:
 ```yaml
-spec:
-  ports:
-    - port: 49100      # External LoadBalancer port
-      targetPort: 49100 # nginx container port
+service:
+  type: LoadBalancer
+  port: 80
 ```
 
-And in nginx config:
-```nginx
-server {
-    listen 49100;  # nginx listens on this port
-    ...
-}
-```
-
-### Credentials (admin / The2password.)
-
-Defined in `basic-auth-proxy.yaml`:
-```yaml
-data:
-  htpasswd: |
-    admin:$apr1$6r/qWWIV$bsDcC/XvWiHNWLKuN2IIl1
-```
-
-To change credentials:
-```bash
-# Generate new htpasswd
-htpasswd -nb <username> '<password>'
-
-# Update ConfigMap and restart proxy
-kubectl rollout restart deployment/headlamp-proxy -n headlamp
-```
+The Headlamp service is exposed directly via AWS LoadBalancer on port 80.
 
 ## Uninstall
 
 ```bash
 # Remove all resources
 helm uninstall headlamp -n headlamp
-kubectl delete -f basic-auth-proxy.yaml
 kubectl delete -f admin-user.yaml
 kubectl delete -f namespace.yaml
 ```
@@ -220,11 +156,6 @@ kubectl delete -f namespace.yaml
 kubectl get pods -n headlamp
 ```
 
-### Check proxy logs
-```bash
-kubectl logs -n headlamp -l app.kubernetes.io/name=headlamp-proxy
-```
-
 ### Check Headlamp logs
 ```bash
 kubectl logs -n headlamp -l app.kubernetes.io/name=headlamp
@@ -233,10 +164,36 @@ kubectl logs -n headlamp -l app.kubernetes.io/name=headlamp
 ### LoadBalancer not getting external IP
 ```bash
 # Check service status
-kubectl describe svc headlamp-proxy -n headlamp
+kubectl describe svc headlamp -n headlamp
 
 # AWS LoadBalancer can take 2-3 minutes to provision
 ```
+
+### Token authentication not working
+```bash
+# Verify the admin-user ServiceAccount exists
+kubectl get sa admin-user -n headlamp
+
+# Verify the token secret exists
+kubectl get secret admin-user-token -n headlamp
+
+# Test token validity
+kubectl auth can-i get pods --as=system:serviceaccount:headlamp:admin-user
+```
+
+## Optional: Basic Auth Proxy
+
+If you need an additional layer of HTTP Basic Authentication in front of Headlamp, you can deploy the nginx proxy:
+
+```bash
+kubectl apply -f basic-auth-proxy.yaml
+```
+
+This creates:
+- nginx proxy with Basic Auth (admin / The2password.)
+- LoadBalancer on port 49100
+
+Access via: `http://<proxy-loadbalancer>:49100`
 
 ## Links
 

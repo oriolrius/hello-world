@@ -7,9 +7,9 @@ replicaCount: 1
 config:
   inCluster: true
 
-# Service configuration (internal, nginx proxy will expose externally)
+# Service configuration (LoadBalancer for direct external access)
 service:
-  type: ClusterIP
+  type: LoadBalancer
   port: 80
 
 # Service account for Headlamp to access cluster resources
