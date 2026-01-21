@@ -107,9 +107,51 @@ hello-world -b 127.0.0.1 -p 3000   # http://127.0.0.1:3000
 
 ## AWS Deployment
 
-Deploy to AWS EC2 using CloudFormation.
+Deployment is a **two-step process**:
 
-### Infrastructure
+1. **CloudFormation** → Provisions AWS infrastructure (VPC, EC2, Security Groups)
+2. **Ansible** → Configures the instance (installs Docker, deploys the container)
+
+> **Important**: CloudFormation only creates the infrastructure. You must run the Ansible playbook to deploy the application.
+
+### Quick Start
+
+```bash
+# Step 1: Create SSH key pair (one-time setup)
+aws ec2 create-key-pair \
+  --key-name hello-world-key \
+  --region eu-west-1 \
+  --query 'KeyMaterial' \
+  --output text > ~/.ssh/hello-world-key.pem
+chmod 600 ~/.ssh/hello-world-key.pem
+
+# Step 2: Deploy infrastructure with CloudFormation
+aws cloudformation deploy \
+  --template-file infra/cloudformation.yml \
+  --stack-name hello-world \
+  --region eu-west-1 \
+  --parameter-overrides KeyName=hello-world-key
+
+# Step 3: Get the EC2 public IP
+IP=$(aws cloudformation describe-stacks \
+  --stack-name hello-world \
+  --region eu-west-1 \
+  --query 'Stacks[0].Outputs[?OutputKey==`PublicIP`].OutputValue' \
+  --output text)
+
+# Step 4: Create Ansible inventory
+echo "[hello-world]
+$IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/hello-world-key.pem" > deploy/inventory.ini
+
+# Step 5: Deploy the application with Ansible
+uv run ansible-galaxy collection install -r deploy/requirements.yml
+cd deploy && uv run ansible-playbook -i inventory.ini playbook.yml
+
+# Step 6: Test the deployment
+curl http://$IP:49000
+```
+
+### Infrastructure (Step 1-2)
 
 The CloudFormation template (`infra/cloudformation.yml`) creates:
 
@@ -121,7 +163,19 @@ The CloudFormation template (`infra/cloudformation.yml`) creates:
 | Security Group | Ports 22 (SSH) and 49000 (app) |
 | EC2 Instance | t3.micro with Ubuntu 24.04 LTS |
 
-The instance runs hello-world as a systemd service on port 49000.
+> **Note**: The EC2 instance is created with a minimal Ubuntu image. Docker and the application are installed by Ansible in the next step.
+
+### Application Deployment (Step 3-5)
+
+The Ansible playbook (`deploy/playbook.yml`) configures the instance:
+
+| Task | Description |
+|------|-------------|
+| Install Docker | Docker Engine + Compose plugin |
+| Deploy container | Pull image from ghcr.io |
+| Start service | Run with Docker Compose |
+
+See [`deploy/README.md`](deploy/README.md) for detailed Ansible documentation.
 
 ### CloudFormation Parameters
 
@@ -132,68 +186,29 @@ The instance runs hello-world as a systemd service on port 49000.
 
 ### SSH Access
 
-To enable SSH access, create a key pair first:
-
 ```bash
-# Create key pair and save private key
-aws ec2 create-key-pair \
-  --key-name hello-world-key \
-  --region eu-west-1 \
-  --query 'KeyMaterial' \
-  --output text > ~/.ssh/hello-world-key.pem
-
-# Set correct permissions
-chmod 600 ~/.ssh/hello-world-key.pem
-```
-
-Then deploy with the key:
-
-```bash
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --parameter-overrides KeyName=hello-world-key
-```
-
-Connect to the instance:
-
-```bash
-# Get public IP
-IP=$(aws cloudformation describe-stacks \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --query 'Stacks[0].Outputs[?OutputKey==`PublicIP`].OutputValue' \
-  --output text)
-
-# SSH into the instance
 ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP
 ```
 
-### Manual Deployment
+### Service Management
 
 ```bash
-# Deploy stack (without SSH)
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1
+# Check container status
+ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP \
+  "sudo docker compose -f /opt/hello-world/docker-compose.yml ps"
 
-# Deploy stack (with SSH access)
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --parameter-overrides KeyName=hello-world-key
+# View logs
+ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP \
+  "sudo docker compose -f /opt/hello-world/docker-compose.yml logs -f"
 
-# Get outputs (IP, URL)
-aws cloudformation describe-stacks \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --query 'Stacks[0].Outputs' \
-  --output table
+# Restart service
+ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP \
+  "sudo docker compose -f /opt/hello-world/docker-compose.yml restart"
+```
 
-# Delete stack
+### Cleanup
+
+```bash
 aws cloudformation delete-stack \
   --stack-name hello-world \
   --region eu-west-1
