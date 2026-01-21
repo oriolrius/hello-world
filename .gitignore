@@ -11,3 +11,7 @@ wheels/
 
 # Ansible inventory (contains IPs)
 deploy/inventory.ini
+
+aws_credentials.yaml
+
+.playwright-mcp/
