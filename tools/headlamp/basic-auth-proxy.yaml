@@ -1,0 +1,134 @@
+# Basic Auth Proxy for Headlamp
+# Provides HTTP Basic Authentication (admin / The2password.)
+#
+# Why nginx proxy?
+# - Headlamp uses token-based auth, not username/password
+# - nginx adds HTTP Basic Auth layer before reaching Headlamp
+# - User authenticates twice: Basic Auth (nginx) + Token (Headlamp)
+#
+# Architecture:
+#   User -> LoadBalancer:49100 -> nginx (basic auth) -> headlamp:80
+
+---
+# ConfigMap containing htpasswd file
+# Generated with: htpasswd -nb admin 'The2password.'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basic-auth-htpasswd
+  namespace: headlamp
+  labels:
+    app.kubernetes.io/name: headlamp
+    app.kubernetes.io/component: proxy
+data:
+  # User: admin, Password: The2password.
+  # To regenerate: htpasswd -nb admin 'The2password.'
+  htpasswd: |
+    admin:$apr1$6r/qWWIV$bsDcC/XvWiHNWLKuN2IIl1
+
+---
+# nginx configuration for basic auth proxy
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: headlamp
+  labels:
+    app.kubernetes.io/name: headlamp
+    app.kubernetes.io/component: proxy
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+    http {
+        server {
+            listen 49100;
+
+            # Basic Auth configuration
+            auth_basic "Headlamp Dashboard";
+            auth_basic_user_file /etc/nginx/htpasswd/htpasswd;
+
+            location / {
+                # Proxy to Headlamp service
+                proxy_pass http://headlamp.headlamp.svc.cluster.local:80;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                # Timeouts for websocket connections
+                proxy_read_timeout 86400;
+                proxy_send_timeout 86400;
+            }
+        }
+    }
+
+---
+# nginx deployment as basic auth proxy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: headlamp-proxy
+  namespace: headlamp
+  labels:
+    app.kubernetes.io/name: headlamp
+    app.kubernetes.io/component: proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: headlamp-proxy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: headlamp-proxy
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 49100
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: htpasswd
+              mountPath: /etc/nginx/htpasswd
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+        - name: htpasswd
+          configMap:
+            name: basic-auth-htpasswd
+
+---
+# LoadBalancer service to expose on port 49100
+apiVersion: v1
+kind: Service
+metadata:
+  name: headlamp-proxy
+  namespace: headlamp
+  labels:
+    app.kubernetes.io/name: headlamp
+    app.kubernetes.io/component: proxy
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 49100
+      targetPort: 49100
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: headlamp-proxy

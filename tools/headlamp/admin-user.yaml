@@ -1,0 +1,51 @@
+# Admin Service Account for Headlamp authentication
+# This creates the "admin" user that can login to Headlamp
+#
+# Why service account?
+# - Headlamp uses Kubernetes service account tokens for authentication
+# - The token acts as the "password" for the admin user
+# - ClusterRoleBinding grants cluster-admin permissions
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: headlamp
+  labels:
+    app.kubernetes.io/name: headlamp
+    app.kubernetes.io/component: auth
+
+---
+# Grant cluster-admin role to admin-user
+# This allows full access to all cluster resources via Headlamp
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: headlamp-admin-user
+  labels:
+    app.kubernetes.io/name: headlamp
+    app.kubernetes.io/component: auth
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin  # Full cluster access
+subjects:
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: headlamp
+
+---
+# Secret to store a long-lived token for admin-user
+# Kubernetes 1.24+ requires explicit secret for persistent tokens
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admin-user-token
+  namespace: headlamp
+  annotations:
+    kubernetes.io/service-account.name: admin-user
+  labels:
+    app.kubernetes.io/name: headlamp
+    app.kubernetes.io/component: auth
+type: kubernetes.io/service-account-token
