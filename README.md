@@ -6,13 +6,13 @@ A teaching project that demonstrates the evolution of DevOps practices. The appl
 
 This version introduces **Containerization** with Docker, packaging the application as a portable container image:
 
-| Practice | Implementation |
-|----------|----------------|
-| Containerization | Docker image with multi-stage build |
-| Container Registry | GitHub Container Registry (ghcr.io) |
-| Container Orchestration | Docker Compose for deployment |
-| Infrastructure | AWS CloudFormation (unchanged) |
-| Configuration Management | Ansible deploys Docker + Compose |
+| Practice                 | Implementation                      |
+| ------------------------ | ----------------------------------- |
+| Containerization         | Docker image with multi-stage build |
+| Container Registry       | GitHub Container Registry (ghcr.io) |
+| Container Orchestration  | Docker Compose for deployment       |
+| Infrastructure           | AWS CloudFormation (unchanged)      |
+| Configuration Management | Ansible deploys Docker + Compose    |
 
 ### Evolution from v4.x
 
@@ -30,14 +30,14 @@ v5.x: Ansible → Install Docker → Pull image → Run as Docker container
 
 ### Key Differences from v4.x
 
-| Aspect | v4.x (Direct Install) | v5.x (Docker) |
-|--------|----------------------|---------------|
-| Runtime | Python on host | Container |
-| Dependencies | Installed on host | Bundled in image |
-| Isolation | Shared with host | Fully isolated |
-| Portability | Ubuntu-specific | Any Docker host |
-| Updates | Re-run Ansible | Pull new image |
-| Rollback | Manual | `docker compose down && up` with old tag |
+| Aspect       | v4.x (Direct Install) | v5.x (Docker)                              |
+| ------------ | --------------------- | ------------------------------------------ |
+| Runtime      | Python on host        | Container                                  |
+| Dependencies | Installed on host     | Bundled in image                           |
+| Isolation    | Shared with host      | Fully isolated                             |
+| Portability  | Ubuntu-specific       | Any Docker host                            |
+| Updates      | Re-run Ansible        | Pull new image                             |
+| Rollback     | Manual                | `docker compose down && up` with old tag |
 
 ### Why Docker?
 
@@ -92,10 +92,10 @@ uv build                        # build .tar.gz and .whl
 
 ## Parameters
 
-| Flag | Description | Default |
-|------|-------------|---------|
+| Flag           | Description  | Default     |
+| -------------- | ------------ | ----------- |
 | `-b, --bind` | Bind address | `0.0.0.0` |
-| `-p, --port` | Port number | `49000` |
+| `-p, --port` | Port number  | `49000`   |
 
 ## Examples
 
@@ -155,13 +155,13 @@ curl http://$IP:49000
 
 The CloudFormation template (`infra/cloudformation.yml`) creates:
 
-| Resource | Description |
-|----------|-------------|
-| VPC | 10.0.0.0/16 with DNS support |
-| Subnet | Public subnet 10.0.1.0/24 |
-| Internet Gateway | For public internet access |
-| Security Group | Ports 22 (SSH) and 49000 (app) |
-| EC2 Instance | t3.micro with Ubuntu 24.04 LTS |
+| Resource         | Description                    |
+| ---------------- | ------------------------------ |
+| VPC              | 10.0.0.0/16 with DNS support   |
+| Subnet           | Public subnet 10.0.1.0/24      |
+| Internet Gateway | For public internet access     |
+| Security Group   | Ports 22 (SSH) and 49000 (app) |
+| EC2 Instance     | t3.micro with Ubuntu 24.04 LTS |
 
 > **Note**: The EC2 instance is created with a minimal Ubuntu image. Docker and the application are installed by Ansible in the next step.
 
@@ -169,20 +169,20 @@ The CloudFormation template (`infra/cloudformation.yml`) creates:
 
 The Ansible playbook (`deploy/playbook.yml`) configures the instance:
 
-| Task | Description |
-|------|-------------|
-| Install Docker | Docker Engine + Compose plugin |
-| Deploy container | Pull image from ghcr.io |
-| Start service | Run with Docker Compose |
+| Task             | Description                    |
+| ---------------- | ------------------------------ |
+| Install Docker   | Docker Engine + Compose plugin |
+| Deploy container | Pull image from ghcr.io        |
+| Start service    | Run with Docker Compose        |
 
 See [`deploy/README.md`](deploy/README.md) for detailed Ansible documentation.
 
 ### CloudFormation Parameters
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `KeyName` | EC2 Key Pair for SSH access | _(none)_ |
-| `AllowedIP` | CIDR for SSH access | `0.0.0.0/0` |
+| Parameter     | Description                 | Default       |
+| ------------- | --------------------------- | ------------- |
+| `KeyName`   | EC2 Key Pair for SSH access | _(none)_    |
+| `AllowedIP` | CIDR for SSH access         | `0.0.0.0/0` |
 
 ### SSH Access
 
@@ -219,6 +219,7 @@ aws cloudformation delete-stack \
 The `deploy.yml` workflow runs on release or manual trigger.
 
 **Required secrets:**
+
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `AWS_SESSION_TOKEN` _(if using SSO)_
