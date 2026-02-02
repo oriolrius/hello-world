@@ -2,7 +2,9 @@
 
 ## Architecture Diagram
 
-See [cicd-architecture.drawio](cicd-architecture.drawio) for the editable diagram (open with [draw.io](https://app.diagrams.net/)).
+![CI/CD Pipeline](cicd-architecture.png)
+
+Editable source: [cicd-architecture.drawio](cicd-architecture.drawio) (open with [draw.io](https://app.diagrams.net/))
 
 ## Overview
 

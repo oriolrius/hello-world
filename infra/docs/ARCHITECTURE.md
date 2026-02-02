@@ -2,7 +2,9 @@
 
 ## Architecture Diagram
 
-See [infra-architecture.drawio](infra-architecture.drawio) for the editable diagram (open with [draw.io](https://app.diagrams.net/)).
+![AWS Infrastructure](infra-architecture.png)
+
+Editable source: [infra-architecture.drawio](infra-architecture.drawio) (open with [draw.io](https://app.diagrams.net/))
 
 ```
 +-------------------------------------------------------------+
