@@ -2,7 +2,7 @@
 
 ## Architecture Diagram
 
-![CI/CD Pipeline](cicd-architecture.png)
+See [cicd-architecture.drawio](cicd-architecture.drawio) for the editable diagram (open with [draw.io](https://app.diagrams.net/)).
 
 ## Overview
 
@@ -135,12 +135,4 @@ The workflow triggers on:
 
 ## Diagram Source
 
-The diagram is generated from `tools/generate_workflows_diagram.py`:
-
-```bash
-cd tools
-source .venv/bin/activate
-python generate_workflows_diagram.py
-```
-
-Editable version: [cicd-architecture.drawio](cicd-architecture.drawio)
+Editable diagram: [cicd-architecture.drawio](cicd-architecture.drawio)

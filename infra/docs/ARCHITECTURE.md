@@ -2,6 +2,8 @@
 
 ## Architecture Diagram
 
+See [infra-architecture.drawio](infra-architecture.drawio) for the editable diagram (open with [draw.io](https://app.diagrams.net/)).
+
 ```
 +-------------------------------------------------------------+
 |                     GitHub Actions (CI)                      |
