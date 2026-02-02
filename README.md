@@ -20,7 +20,7 @@ This version introduces **Containerization** with Docker and **Configuration Man
 
 | Practice                 | Implementation                      |
 | ------------------------ | ----------------------------------- |
-| Containerization         | Docker image with multi-stage build |
+| Containerization         | Docker image with slim base         |
 | Container Registry       | GitHub Container Registry (ghcr.io) |
 | Container Orchestration  | Docker Compose for deployment       |
 | Infrastructure           | AWS CloudFormation                  |
