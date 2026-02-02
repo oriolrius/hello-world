@@ -1,3 +1,9 @@
+## v4.3.2 (2026-02-02)
+
+### Refactor
+
+- **ci**: simplify deploy job and add short SHA tag
+
 ## v4.3.1 (2026-02-02)
 
 ### Fix
