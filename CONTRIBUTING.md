@@ -54,7 +54,6 @@ Version bumps are automatic based on commit types:
 ```bash
 cz bump           # bump version based on commits since last tag
 cz bump --dry-run # preview the bump
-cz changelog      # generate CHANGELOG.md
 ```
 
 ### Examples

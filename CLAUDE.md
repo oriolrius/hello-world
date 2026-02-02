@@ -216,7 +216,6 @@ cz commit        # Interactive commit (optional)
 cz check         # Validate last commit message
 cz bump          # Bump version based on commits
 cz bump --dry-run  # Preview version bump
-cz changelog     # Generate changelog only
 ```
 
 ### Co-Authored-By
