@@ -1,3 +1,9 @@
+## v4.3.3 (2026-02-02)
+
+### Fix
+
+- **ci**: disable pushing attestation SHA256 tags to registry
+
 ## v4.3.2 (2026-02-02)
 
 ### Refactor
