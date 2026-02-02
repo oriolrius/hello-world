@@ -140,12 +140,41 @@ jobs:
             --output text > /tmp/deploy-key.pem
           chmod 600 /tmp/deploy-key.pem
 
+      - name: Wait for stack if in transitional state
+        run: |
+          STACK_STATUS=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].StackStatus' \
+            --output text 2>/dev/null || echo "DOES_NOT_EXIST")
+
+          echo "Current stack status: $STACK_STATUS"
+
+          case $STACK_STATUS in
+            *_IN_PROGRESS)
+              echo "Stack is in transitional state, waiting..."
+              if [[ "$STACK_STATUS" == "DELETE_IN_PROGRESS" ]]; then
+                aws cloudformation wait stack-delete-complete --stack-name ${{ env.STACK_NAME }}
+              else
+                aws cloudformation wait stack-update-complete --stack-name ${{ env.STACK_NAME }} || \
+                aws cloudformation wait stack-create-complete --stack-name ${{ env.STACK_NAME }}
+              fi
+              echo "Stack operation completed"
+              ;;
+            DOES_NOT_EXIST|DELETE_COMPLETE)
+              echo "Stack does not exist, will be created"
+              ;;
+            *)
+              echo "Stack is stable, proceeding with deployment"
+              ;;
+          esac
+
       - name: Deploy CloudFormation stack
         run: |
           aws cloudformation deploy \
             --template-file infra/cloudformation.yml \
             --stack-name ${{ env.STACK_NAME }} \
-            --parameter-overrides KeyName=hello-world-deploy-key
+            --parameter-overrides KeyName=hello-world-deploy-key \
+            --no-fail-on-empty-changeset
 
       - name: Wait for EC2 instance
         run: |
