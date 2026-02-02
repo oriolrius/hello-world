@@ -24,7 +24,7 @@ CloudFormation → EC2 UserData → Install Docker → Pull image → Run contai
 
 ### Architecture Overview
 
-![Architecture Overview](assets/diagrams/architecture.png)
+![Architecture Overview](infra/docs/infra-architecture.png)
 
 ### Key Features
 
