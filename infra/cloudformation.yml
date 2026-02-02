@@ -101,6 +101,35 @@ Resources:
       SubnetId: !Ref PublicSubnet
       SecurityGroupIds:
         - !Ref SecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+
+          # Update system
+          apt-get update
+          apt-get upgrade -y
+
+          # Install Docker
+          apt-get install -y ca-certificates curl
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          chmod a+r /etc/apt/keyrings/docker.asc
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+          apt-get update
+          apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+          # Start Docker
+          systemctl enable docker
+          systemctl start docker
+
+          # Create app directory and download docker-compose.yml
+          mkdir -p /opt/hello-world
+          cd /opt/hello-world
+          curl -fsSL https://raw.githubusercontent.com/oriolrius/hello-world/main/docker/docker-compose.yml -o docker-compose.yml
+
+          # Run with docker compose
+          docker compose up -d
       Tags:
         - Key: Name
           Value: hello-world
