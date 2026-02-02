@@ -2,6 +2,18 @@
 
 A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
 
+## Version Evolution
+
+| Branch | Focus | Key Practice |
+|--------|-------|--------------|
+| **v1.x** | Manual basics | Run Python script manually |
+| **v2.x** | Packaging | `uv build` creates distributable wheel |
+| **v3.x** | Infrastructure as Code | CloudFormation + UserData bootstrap |
+| **v4.x** | Single-step cloud deploy | CloudFormation UserData installs Docker |
+| **v5.x** | Separation of concerns | CloudFormation + Ansible + Docker |
+
+Each version builds on the previous, introducing one new DevOps concept while keeping the application unchanged.
+
 ## What This Version Demonstrates (v5.x)
 
 This version introduces **Containerization** with Docker and **Configuration Management** with Ansible:
