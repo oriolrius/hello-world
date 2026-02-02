@@ -2,7 +2,7 @@
 
 A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
 
-## What This Version Demonstrates (v4.x)
+## What This Version Demonstrates (v5.x)
 
 This version introduces **Configuration Management** with Ansible, separating infrastructure provisioning from application deployment:
 
@@ -17,11 +17,11 @@ This version introduces **Configuration Management** with Ansible, separating in
 ### Evolution from v3.x
 
 - **v3.x**: CloudFormation UserData script runs once at instance launch — updating requires destroying and recreating
-- **v4.x**: **Ansible playbooks** can be re-run anytime to update the application without touching infrastructure
+- **v5.x**: **Ansible playbooks** can be re-run anytime to update the application without touching infrastructure
 
 ```
 v3.x: CloudFormation deploys EC2 + installs app (one-time, coupled)
-v4.x: CloudFormation deploys EC2, then Ansible installs app (separate, repeatable)
+v5.x: CloudFormation deploys EC2, then Ansible installs app (separate, repeatable)
 ```
 
 ### Architecture Overview
@@ -30,7 +30,7 @@ v4.x: CloudFormation deploys EC2, then Ansible installs app (separate, repeatabl
 
 ### Key Differences from v3.x
 
-| Aspect | v3.x (UserData) | v4.x (Ansible) |
+| Aspect | v3.x (UserData) | v5.x (Ansible) |
 |--------|-----------------|----------------|
 | When it runs | Once at launch | Anytime on demand |
 | Update app | Destroy/recreate stack | Re-run playbook |

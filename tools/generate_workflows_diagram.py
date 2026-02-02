@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate CI/CD pipeline architecture diagram for v4.0.x.
+"""Generate CI/CD pipeline architecture diagram for v5.0.x.
 
 This script creates a visual representation of the GitHub Actions workflows
 including the release pipeline (lint, test, build, release) and deploy pipeline
@@ -28,7 +28,7 @@ def main():
     }
 
     with Diagram(
-        "CI/CD Pipeline - v4.0.x",
+        "CI/CD Pipeline - v5.0.x",
         filename=f"{OUTPUT_DIR}/{DIAGRAM_NAME}",
         outformat=["png", "dot"],
         direction="LR",

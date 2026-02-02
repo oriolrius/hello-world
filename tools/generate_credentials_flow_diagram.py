@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate credentials flow architecture diagram for v4.0.x.
+"""Generate credentials flow architecture diagram for v5.0.x.
 
 This script creates a visual representation of how credentials flow
 from GitHub Secrets through AWS CLI, CloudFormation, and Ansible
@@ -30,7 +30,7 @@ def main():
     }
 
     with Diagram(
-        "Credentials Flow - v4.0.x",
+        "Credentials Flow - v5.0.x",
         filename=f"{OUTPUT_DIR}/{DIAGRAM_NAME}",
         outformat=["png", "dot"],
         direction="TB",

@@ -1,4 +1,4 @@
-# CI/CD Pipeline Architecture - v4.0.x
+# CI/CD Pipeline Architecture - v5.0.x
 
 This document describes the CI/CD pipeline architecture for the hello-world application version 4.0.x.
 

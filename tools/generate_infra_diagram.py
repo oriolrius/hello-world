@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate infrastructure architecture diagram for v4.0.x.
+"""Generate infrastructure architecture diagram for v5.0.x.
 
 This script creates a visual representation of the AWS infrastructure
 deployed via CloudFormation: VPC, Subnet, Internet Gateway, Security Group,
@@ -26,7 +26,7 @@ def main():
     }
 
     with Diagram(
-        "AWS Infrastructure - v4.0.x",
+        "AWS Infrastructure - v5.0.x",
         filename=f"{OUTPUT_DIR}/{DIAGRAM_NAME}",
         outformat=["png", "dot"],
         direction="LR",

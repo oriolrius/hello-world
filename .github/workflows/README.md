@@ -1,4 +1,4 @@
-# GitHub Workflows - v4.0.x
+# GitHub Workflows - v5.0.x
 
 This folder contains the CI/CD workflows for the hello-world application.
 
@@ -13,8 +13,8 @@ This folder contains the CI/CD workflows for the hello-world application.
 
 1. Create and push a version tag:
    ```bash
-   git tag -a v4.0.1 -m "Release v4.0.1"
-   git push origin v4.0.1
+   git tag -a v5.0.1 -m "Release v5.0.1"
+   git push origin v5.0.1
    ```
 
 2. The release workflow will:

@@ -1,9 +1,9 @@
-digraph "Ansible Deployment - v4.0.x" {
+digraph "Ansible Deployment - v5.0.x" {
 	graph [bb="0,0,214,1252",
 		fontcolor="#2D3436",
 		fontname="Sans-Serif",
 		fontsize=14,
-		label="Ansible Deployment - v4.0.x",
+		label="Ansible Deployment - v5.0.x",
 		lheight=0.21,
 		lp="107,11.5",
 		lwidth=2.75,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Ansible deployment architecture diagram for v4.0.x.
+"""Generate Ansible deployment architecture diagram for v5.0.x.
 
 This script creates a visual representation of the Ansible deployment process
 including package installation, uv setup, application installation, and
@@ -27,7 +27,7 @@ def main():
     }
 
     with Diagram(
-        "Ansible Deployment - v4.0.x",
+        "Ansible Deployment - v5.0.x",
         filename=f"{OUTPUT_DIR}/{DIAGRAM_NAME}",
         outformat=["png", "dot"],
         direction="TB",

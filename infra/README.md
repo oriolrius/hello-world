@@ -1,4 +1,4 @@
-# Infrastructure - v4.0.x
+# Infrastructure - v5.0.x
 
 This folder contains the AWS infrastructure definition for the hello-world application.
 

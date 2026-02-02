@@ -1,4 +1,4 @@
-# AWS Infrastructure Architecture - v4.0.x
+# AWS Infrastructure Architecture - v5.0.x
 
 This document describes the AWS infrastructure architecture for the hello-world application version 4.0.x.
 

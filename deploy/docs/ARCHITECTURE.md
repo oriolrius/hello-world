@@ -1,4 +1,4 @@
-# Ansible Deployment Architecture - v4.0.x
+# Ansible Deployment Architecture - v5.0.x
 
 This document describes the Ansible deployment architecture for the hello-world application version 4.0.x.
 

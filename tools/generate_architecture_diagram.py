@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate architecture overview diagram for README.md.
-v4.x - CloudFormation + Ansible deployment.
+v5.x - CloudFormation + Ansible deployment.
 """
 
 from diagrams import Diagram, Cluster, Edge
@@ -23,7 +23,7 @@ graph_attr = {
 }
 
 with Diagram(
-    "Architecture Overview (v4.x)",
+    "Architecture Overview (v5.x)",
     filename=OUTPUT_PATH,
     show=False,
     direction="TB",

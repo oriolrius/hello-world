@@ -1,4 +1,4 @@
-# Ansible Deployment - v4.0.x
+# Ansible Deployment - v5.0.x
 
 This folder contains Ansible configuration for deploying the hello-world application to EC2 instances.
 

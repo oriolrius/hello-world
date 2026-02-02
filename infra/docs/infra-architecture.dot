@@ -1,9 +1,9 @@
-digraph "AWS Infrastructure - v4.0.x" {
+digraph "AWS Infrastructure - v5.0.x" {
 	graph [bb="0,0,950,353",
 		fontcolor="#2D3436",
 		fontname="Sans-Serif",
 		fontsize=14,
-		label="AWS Infrastructure - v4.0.x",
+		label="AWS Infrastructure - v5.0.x",
 		lheight=0.21,
 		lp="475,11.5",
 		lwidth=2.64,
