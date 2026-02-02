@@ -67,8 +67,17 @@ deploy:
 # Delete CloudFormation stack
 delete:
 	@echo "Deleting CloudFormation stack..."
-	@echo "WARNING: This will delete all resources including the ECR repository!"
+	@echo "WARNING: This will delete all resources including the ECR repository and images!"
 	@read -p "Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ]
+	@echo "Emptying ECR repository (required before deletion)..."
+	@IMAGES=$$(aws ecr list-images --repository-name $(STACK_NAME) --region $(AWS_REGION) --query 'imageIds[*]' --output json 2>/dev/null); \
+	if [ "$$IMAGES" != "[]" ] && [ -n "$$IMAGES" ]; then \
+		aws ecr batch-delete-image --repository-name $(STACK_NAME) --region $(AWS_REGION) --image-ids "$$IMAGES" > /dev/null && \
+		echo "ECR images deleted."; \
+	else \
+		echo "No images to delete."; \
+	fi
+	@echo "Deleting stack..."
 	aws cloudformation delete-stack --stack-name $(STACK_NAME) --region $(AWS_REGION)
 	aws cloudformation wait stack-delete-complete --stack-name $(STACK_NAME) --region $(AWS_REGION)
 	@echo "Stack deleted."
