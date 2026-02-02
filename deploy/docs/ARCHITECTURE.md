@@ -19,32 +19,7 @@ The deployment uses Ansible to configure EC2 instances provisioned by CloudForma
 
 ## Deployment Flow
 
-```
-┌─────────────────────┐
-│   Control Node      │
-│   (GitHub Actions)  │
-└─────────┬───────────┘
-          │ SSH
-┌─────────▼───────────┐
-│ 1. Install packages │
-│    (apt: curl, ca)  │
-└─────────┬───────────┘
-          │
-┌─────────▼───────────┐
-│ 2. Add Docker repo  │
-│    (GPG key + apt)  │
-└─────────┬───────────┘
-          │
-┌─────────▼───────────┐
-│ 3. Install Docker   │
-│    (CE + Compose)   │
-└─────────┬───────────┘
-          │
-┌─────────▼───────────┐
-│ 4. Deploy container │
-│    (Docker Compose) │
-└─────────────────────┘
-```
+![Deployment Flow](deploy-flow.png)
 
 ## Playbook Tasks
 

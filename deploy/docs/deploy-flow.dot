@@ -1,0 +1,82 @@
+digraph DeploymentFlow {
+    // Graph settings
+    rankdir=TB;
+    splines=ortho;
+    nodesep=0.6;
+    ranksep=0.8;
+    bgcolor="transparent";
+
+    // Default node style
+    node [
+        shape=box
+        style="filled,rounded"
+        fontname="Sans-Serif"
+        fontsize=11
+        margin="0.3,0.2"
+    ];
+
+    // Default edge style
+    edge [
+        fontname="Sans-Serif"
+        fontsize=10
+        color="#7B8894"
+    ];
+
+    // Control Node
+    control [
+        label="Control Node\n(GitHub Actions)"
+        fillcolor="#E5F5FD"
+        color="#AEB6BE"
+        penwidth=2
+    ];
+
+    // Deployment steps
+    step1 [
+        label="1. Install packages\n(apt: curl, ca-certificates)"
+        fillcolor="#EBF3E7"
+        color="#82B366"
+    ];
+
+    step2 [
+        label="2. Add Docker repo\n(GPG key + apt)"
+        fillcolor="#EBF3E7"
+        color="#82B366"
+    ];
+
+    step3 [
+        label="3. Install Docker\n(CE + Compose plugin)"
+        fillcolor="#2496ED"
+        color="#1A6DB3"
+        fontcolor="white"
+    ];
+
+    step4 [
+        label="4. Deploy container\n(Docker Compose)"
+        fillcolor="#2496ED"
+        color="#1A6DB3"
+        fontcolor="white"
+    ];
+
+    // Connections
+    control -> step1 [
+        xlabel="SSH"
+        color="#0066CC"
+        fontcolor="#0066CC"
+        penwidth=2
+    ];
+
+    step1 -> step2 [
+        color="#82B366"
+        penwidth=2
+    ];
+
+    step2 -> step3 [
+        color="#82B366"
+        penwidth=2
+    ];
+
+    step3 -> step4 [
+        color="#82B366"
+        penwidth=2
+    ];
+}
