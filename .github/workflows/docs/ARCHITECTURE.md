@@ -1,21 +1,38 @@
-# CI/CD Pipeline Architecture (v4.x)
+# CI/CD Pipeline Architecture (v4-ecr-ecs-fargate)
 
 ## Architecture Diagram
 
 ![CI/CD Pipeline](cicd-architecture.png)
 
-## Connection Color Legend
-
-| Color | Meaning |
-|-------|---------|
-| Blue (#4299E1) | Trigger/Start |
-| Green (#48BB78) | Quality gates passed |
-| Purple (#9F7AEA) | Release publishing |
-| Orange (#ED8936) | Deployment flow |
-
 ## Overview
 
-The v4.x release workflow combines continuous integration, container building, and infrastructure deployment into a single automated pipeline.
+The v4-ecr-ecs-fargate release workflow provides continuous integration with Docker image publishing to Amazon ECR. Deployment to ECS Fargate is manual via Makefile.
+
+## Pipeline Flow
+
+```
+          ┌─────┐     ┌──────┐
+          │lint │     │ test │
+          └──┬──┘     └──┬───┘
+             │           │
+     ┌───────┴───────────┴───────┐
+     │                           │
+     ▼                           ▼
+┌─────────┐                 ┌─────────┐
+│  build  │                 │ docker  │
+└────┬────┘                 └─────────┘
+     │                           │
+     ▼                           ▼
+┌─────────┐                 ┌─────────┐
+│ release │                 │   ECR   │
+└─────────┘                 └─────────┘
+                                 │
+                                 ▼ (manual)
+                            ┌─────────┐
+                            │   ECS   │
+                            │ Fargate │
+                            └─────────┘
+```
 
 ## Jobs
 
@@ -47,27 +64,6 @@ Builds Python wheel and source distributions.
 
 **Depends on:** lint, test
 
-### docker
-
-Builds and pushes Docker image to GitHub Container Registry.
-
-```yaml
-- uses: docker/build-push-action@v6
-  with:
-    context: .
-    file: docker/Dockerfile
-    push: true
-```
-
-**Image tags:**
-- `latest` (for tagged releases)
-- `{version}` (e.g., 5.2.0)
-- `{major}.{minor}` (e.g., 5.2)
-- `{major}` (e.g., 5)
-- `{sha}` (commit SHA)
-
-**Depends on:** lint, test
-
 ### release
 
 Creates GitHub Release with wheel artifacts.
@@ -80,62 +76,62 @@ Creates GitHub Release with wheel artifacts.
 
 **Depends on:** build
 
-### deploy
+### docker
 
-Deploys to AWS EC2 using CloudFormation with UserData.
+Builds and pushes Docker image to Amazon ECR.
 
 ```yaml
-# 1. Deploy CloudFormation (UserData installs Docker and runs container)
-aws cloudformation deploy --template-file infra/cloudformation.yml
-
-# 2. Wait for EC2 instance to be ready
-aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID
-
-# 3. Verify deployment
-curl http://$IP:49000/
+- uses: aws-actions/amazon-ecr-login@v2
+- uses: docker/build-push-action@v6
+  with:
+    context: .
+    file: docker/Dockerfile
+    push: true
 ```
 
-**Depends on:** build, docker
+**Image tags** (all with `-ecr-ecs-fargate` suffix):
+- `v{version}-ecr-ecs-fargate` (e.g., v4.4.0-ecr-ecs-fargate)
+- `v{major}.{minor}-ecr-ecs-fargate` (e.g., v4.4-ecr-ecs-fargate)
+- `v{major}-ecr-ecs-fargate` (e.g., v4-ecr-ecs-fargate)
+- `sha-{sha}-ecr-ecs-fargate` (e.g., sha-abc1234-ecr-ecs-fargate)
 
-## Job Dependencies
-
-```
-          ┌─────┐     ┌──────┐
-          │lint │     │ test │
-          └──┬──┘     └──┬───┘
-             │           │
-     ┌───────┴───────────┴───────┐
-     │                           │
-     ▼                           ▼
-┌─────────┐                 ┌─────────┐
-│  build  │                 │ docker  │
-└────┬────┘                 └────┬────┘
-     │                           │
-     ├──────────────┐            │
-     │              │            │
-     ▼              ▼            │
-┌─────────┐   ┌──────────┐◀──────┘
-│ release │   │  deploy  │
-└─────────┘   └──────────┘
-```
+**Depends on:** lint, test
 
 ## Environment Variables
 
 | Variable | Value | Description |
 |----------|-------|-------------|
-| `AWS_REGION` | eu-west-1 | AWS region for deployment |
-| `STACK_NAME` | hello-world | CloudFormation stack name |
-| `REGISTRY` | ghcr.io | Container registry |
-| `IMAGE_NAME` | ${{ github.repository }} | Docker image name |
+| `AWS_REGION` | eu-west-1 | AWS region |
+| `STACK_NAME` | hello-world-ecr-ecs-fargate | CloudFormation stack name |
 
 ## Required Secrets
 
 | Secret | Description |
 |--------|-------------|
-| `AWS_ACCESS_KEY_ID` | AWS access key for deployment |
+| `AWS_ACCESS_KEY_ID` | AWS access key for ECR |
 | `AWS_SECRET_ACCESS_KEY` | AWS secret key |
 | `AWS_SESSION_TOKEN` | AWS session token (if using temporary credentials) |
-| `GITHUB_TOKEN` | Auto-provided for container registry |
+
+## Manual Deployment
+
+Deployment is not automated. After the CI pushes to ECR:
+
+```bash
+# Force new ECS deployment with the pushed image
+make redeploy
+
+# Or deploy with a specific tag
+make deploy TAG=v4.4.0-ecr-ecs-fargate
+
+# Check status
+make status
+```
+
+## Trigger
+
+The workflow triggers on:
+- Push of tags matching `v*-ecr-ecs-fargate`
+- Manual trigger via `workflow_dispatch`
 
 ## Diagram Source
 
