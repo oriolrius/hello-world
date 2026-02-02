@@ -1,3 +1,9 @@
+## v4.3.1 (2026-02-02)
+
+### Fix
+
+- **docker**: use v4 image tag in docker-compose.yml
+
 ## v4.3.0 (2026-02-02)
 
 ### Fix
