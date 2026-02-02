@@ -1,4 +1,4 @@
-# AWS Infrastructure Architecture (v5.x)
+# AWS Infrastructure Architecture (v4.x)
 
 ## Architecture Diagram
 
@@ -12,7 +12,7 @@
 
 ## Overview
 
-The v5.x infrastructure creates a minimal AWS environment for running the hello-world application on EC2. Unlike v3.x, the application is not bootstrapped via UserData—instead, Ansible handles configuration after the instance is created.
+The v4.x infrastructure creates a minimal AWS environment for running the hello-world application on EC2. The application is bootstrapped via CloudFormation UserData, which installs Docker and deploys the container automatically on instance launch.
 
 ## Resources Created
 
@@ -29,7 +29,7 @@ The v5.x infrastructure creates a minimal AWS environment for running the hello-
 
 | Resource | Type | Configuration |
 |----------|------|---------------|
-| EC2 Instance | AWS::EC2::Instance | t3.micro, Ubuntu 24.04 LTS |
+| EC2 Instance | AWS::EC2::Instance | t3a.micro, Ubuntu 24.04 LTS |
 | Security Group | AWS::EC2::SecurityGroup | Inbound: 22 (SSH), 49000 (app) |
 
 ## CloudFormation Parameters

@@ -9,10 +9,7 @@ wheels/
 # Virtual environments
 .venv
 
-# Ansible inventory (contains IPs)
-deploy/inventory.ini
-
-
+# AWS credentials
 aws_credentials.yaml
 
 .playwright-mcp/

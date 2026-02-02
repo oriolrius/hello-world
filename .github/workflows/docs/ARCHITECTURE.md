@@ -1,4 +1,4 @@
-# CI/CD Pipeline Architecture (v5.x)
+# CI/CD Pipeline Architecture (v4.x)
 
 ## Architecture Diagram
 
@@ -15,7 +15,7 @@
 
 ## Overview
 
-The v5.x release workflow combines continuous integration, container building, and infrastructure deployment into a single automated pipeline.
+The v4.x release workflow combines continuous integration, container building, and infrastructure deployment into a single automated pipeline.
 
 ## Jobs
 
@@ -82,23 +82,20 @@ Creates GitHub Release with wheel artifacts.
 
 ### deploy
 
-Deploys to AWS EC2 using CloudFormation and Ansible.
+Deploys to AWS EC2 using CloudFormation with UserData.
 
 ```yaml
-# 1. Delete existing stack
-aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}
-
-# 2. Create new key pair
-aws ec2 create-key-pair --key-name ${{ env.KEY_NAME }}
-
-# 3. Deploy CloudFormation
+# 1. Deploy CloudFormation (UserData installs Docker and runs container)
 aws cloudformation deploy --template-file infra/cloudformation.yml
 
-# 4. Run Ansible playbook
-uv run ansible-playbook -i inventory.ini playbook.yml
+# 2. Wait for EC2 instance to be ready
+aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID
+
+# 3. Verify deployment
+curl http://$IP:49000/
 ```
 
-**Depends on:** build
+**Depends on:** build, docker
 
 ## Job Dependencies
 
@@ -112,12 +109,12 @@ uv run ansible-playbook -i inventory.ini playbook.yml
      ▼                           ▼
 ┌─────────┐                 ┌─────────┐
 │  build  │                 │ docker  │
-└────┬────┘                 └─────────┘
-     │
-     ├──────────────┐
-     │              │
-     ▼              ▼
-┌─────────┐   ┌──────────┐
+└────┬────┘                 └────┬────┘
+     │                           │
+     ├──────────────┐            │
+     │              │            │
+     ▼              ▼            │
+┌─────────┐   ┌──────────┐◀──────┘
 │ release │   │  deploy  │
 └─────────┘   └──────────┘
 ```
@@ -128,7 +125,6 @@ uv run ansible-playbook -i inventory.ini playbook.yml
 |----------|-------|-------------|
 | `AWS_REGION` | eu-west-1 | AWS region for deployment |
 | `STACK_NAME` | hello-world | CloudFormation stack name |
-| `KEY_NAME` | hello-world-deploy-key | EC2 key pair name |
 | `REGISTRY` | ghcr.io | Container registry |
 | `IMAGE_NAME` | ${{ github.repository }} | Docker image name |
 

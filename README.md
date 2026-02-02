@@ -2,49 +2,47 @@
 
 A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
 
-## What This Version Demonstrates (v5.x)
+## What This Version Demonstrates (v4.x)
 
-This version introduces **Containerization** with Docker, packaging the application as a portable container image:
+This version introduces **Containerization** with Docker and **Infrastructure as Code** with CloudFormation UserData:
 
-| Practice                 | Implementation                      |
-| ------------------------ | ----------------------------------- |
-| Containerization         | Docker image with multi-stage build |
-| Container Registry       | GitHub Container Registry (ghcr.io) |
-| Container Orchestration  | Docker Compose for deployment       |
-| Infrastructure           | AWS CloudFormation (unchanged)      |
-| Configuration Management | Ansible deploys Docker + Compose    |
+| Practice                | Implementation                         |
+| ----------------------- | -------------------------------------- |
+| Containerization        | Docker image with multi-stage build    |
+| Container Registry      | GitHub Container Registry (ghcr.io)    |
+| Container Orchestration | Docker Compose for deployment          |
+| Infrastructure          | AWS CloudFormation with UserData       |
+| Configuration           | Cloud-init bootstraps Docker on boot   |
 
-### Evolution from v4.x
+### Single-Step Deployment
 
-- **v4.x**: Ansible installs the app directly on the host using `uv tool install`
-- **v5.x**: Ansible installs **Docker**, then deploys the app as a **container**
+Unlike previous versions that required separate infrastructure and configuration steps, v4.x uses **CloudFormation UserData** to bootstrap the entire stack:
 
 ```
-v4.x: Ansible → Install uv → Install app → Run as systemd service
-v5.x: Ansible → Install Docker → Pull image → Run as Docker container
+CloudFormation → EC2 UserData → Install Docker → Pull image → Run container
 ```
 
 ### Architecture Overview
 
 ![Architecture Overview](assets/diagrams/architecture.png)
 
-### Key Differences from v4.x
+### Key Features
 
-| Aspect       | v4.x (Direct Install) | v5.x (Docker)                              |
-| ------------ | --------------------- | ------------------------------------------ |
-| Runtime      | Python on host        | Container                                  |
-| Dependencies | Installed on host     | Bundled in image                           |
-| Isolation    | Shared with host      | Fully isolated                             |
-| Portability  | Ubuntu-specific       | Any Docker host                            |
-| Updates      | Re-run Ansible        | Pull new image                             |
-| Rollback     | Manual                | `docker compose down && up` with old tag |
+| Aspect       | Implementation                                     |
+| ------------ | -------------------------------------------------- |
+| Runtime      | Container                                          |
+| Dependencies | Bundled in image                                   |
+| Isolation    | Fully isolated                                     |
+| Portability  | Any Docker host                                    |
+| Updates      | Pull new image                                     |
+| Rollback     | `docker compose down && up` with old tag           |
 
 ### Why Docker?
 
 1. **Immutable artifacts**: The image is the same everywhere (dev, staging, prod)
 2. **Isolation**: App doesn't pollute or depend on host system
 3. **Portability**: Runs anywhere Docker runs (cloud, local, CI)
-4. **Version pinning**: `image:v5.0.0` guarantees exact version
+4. **Version pinning**: `image:v4.0.0` guarantees exact version
 
 **Key learning**: Containers decouple the application from the host, making deployments reproducible and rollbacks trivial.
 
@@ -107,51 +105,31 @@ hello-world -b 127.0.0.1 -p 3000   # http://127.0.0.1:3000
 
 ## AWS Deployment
 
-Deployment is a **two-step process**:
+Deployment is a **single-step process** using CloudFormation with UserData:
 
-1. **CloudFormation** → Provisions AWS infrastructure (VPC, EC2, Security Groups)
-2. **Ansible** → Configures the instance (installs Docker, deploys the container)
-
-> **Important**: CloudFormation only creates the infrastructure. You must run the Ansible playbook to deploy the application.
+**CloudFormation** → Provisions infrastructure AND configures the instance (installs Docker, deploys the container)
 
 ### Quick Start
 
 ```bash
-# Step 1: Create SSH key pair (one-time setup)
-aws ec2 create-key-pair \
-  --key-name hello-world-key \
-  --region eu-west-1 \
-  --query 'KeyMaterial' \
-  --output text > ~/.ssh/hello-world-key.pem
-chmod 600 ~/.ssh/hello-world-key.pem
-
-# Step 2: Deploy infrastructure with CloudFormation
+# Step 1: Deploy infrastructure with CloudFormation
 aws cloudformation deploy \
   --template-file infra/cloudformation.yml \
   --stack-name hello-world \
-  --region eu-west-1 \
-  --parameter-overrides KeyName=hello-world-key
+  --region eu-west-1
 
-# Step 3: Get the EC2 public IP
+# Step 2: Get the EC2 public IP
 IP=$(aws cloudformation describe-stacks \
   --stack-name hello-world \
   --region eu-west-1 \
   --query 'Stacks[0].Outputs[?OutputKey==`PublicIP`].OutputValue' \
   --output text)
 
-# Step 4: Create Ansible inventory
-echo "[hello-world]
-$IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/hello-world-key.pem" > deploy/inventory.ini
-
-# Step 5: Deploy the application with Ansible
-uv run ansible-galaxy collection install -r deploy/requirements.yml
-cd deploy && uv run ansible-playbook -i inventory.ini playbook.yml
-
-# Step 6: Test the deployment
+# Step 3: Test the deployment (wait ~2 min for UserData to complete)
 curl http://$IP:49000
 ```
 
-### Infrastructure (Step 1-2)
+### What CloudFormation Creates
 
 The CloudFormation template (`infra/cloudformation.yml`) creates:
 
@@ -161,32 +139,46 @@ The CloudFormation template (`infra/cloudformation.yml`) creates:
 | Subnet           | Public subnet 10.0.1.0/24      |
 | Internet Gateway | For public internet access     |
 | Security Group   | Ports 22 (SSH) and 49000 (app) |
-| EC2 Instance     | t3.micro with Ubuntu 24.04 LTS |
+| EC2 Instance     | t3a.micro with Ubuntu 24.04 LTS |
 
-> **Note**: The EC2 instance is created with a minimal Ubuntu image. Docker and the application are installed by Ansible in the next step.
+### What UserData Installs
 
-### Application Deployment (Step 3-5)
+The EC2 UserData script automatically:
 
-The Ansible playbook (`deploy/playbook.yml`) configures the instance:
-
-| Task             | Description                    |
-| ---------------- | ------------------------------ |
-| Install Docker   | Docker Engine + Compose plugin |
-| Deploy container | Pull image from ghcr.io        |
-| Start service    | Run with Docker Compose        |
-
-See [`deploy/README.md`](deploy/README.md) for detailed Ansible documentation.
+| Task                   | Description                              |
+| ---------------------- | ---------------------------------------- |
+| Install Docker         | Docker Engine + Compose plugin           |
+| Download docker-compose| Fetches from GitHub repository           |
+| Start container        | Runs with `docker compose up -d`         |
 
 ### CloudFormation Parameters
 
 | Parameter     | Description                 | Default       |
 | ------------- | --------------------------- | ------------- |
-| `KeyName`   | EC2 Key Pair for SSH access | _(none)_    |
-| `AllowedIP` | CIDR for SSH access         | `0.0.0.0/0` |
+| `KeyName`   | EC2 Key Pair for SSH access | _(none)_      |
+| `AllowedIP` | CIDR for SSH access         | `0.0.0.0/0`   |
 
-### SSH Access
+### SSH Access (Optional)
+
+To enable SSH, create a key pair and pass it to CloudFormation:
 
 ```bash
+# Create key pair
+aws ec2 create-key-pair \
+  --key-name hello-world-key \
+  --region eu-west-1 \
+  --query 'KeyMaterial' \
+  --output text > ~/.ssh/hello-world-key.pem
+chmod 600 ~/.ssh/hello-world-key.pem
+
+# Deploy with SSH access
+aws cloudformation deploy \
+  --template-file infra/cloudformation.yml \
+  --stack-name hello-world \
+  --region eu-west-1 \
+  --parameter-overrides KeyName=hello-world-key
+
+# Connect
 ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP
 ```
 
