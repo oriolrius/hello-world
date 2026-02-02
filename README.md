@@ -4,22 +4,22 @@ A teaching project that demonstrates the evolution of DevOps practices. The appl
 
 ## What This Version Demonstrates (v4.x)
 
-This version introduces **Containerization** with Docker and **Infrastructure as Code** with CloudFormation UserData:
+This version introduces **Containerization** with Docker and **Serverless Container Orchestration** with AWS ECS Fargate:
 
 | Practice                | Implementation                         |
 | ----------------------- | -------------------------------------- |
 | Containerization        | Docker image with multi-stage build    |
-| Container Registry      | GitHub Container Registry (ghcr.io)    |
-| Container Orchestration | Docker Compose for deployment          |
-| Infrastructure          | AWS CloudFormation with UserData       |
-| Configuration           | Cloud-init bootstraps Docker on boot   |
+| Container Registry      | Amazon ECR (Elastic Container Registry)|
+| Container Orchestration | AWS ECS Fargate (serverless)           |
+| Infrastructure          | AWS CloudFormation                     |
+| CI/CD                   | GitHub Actions (build, test, push)     |
 
-### Single-Step Deployment
+### Serverless Containers
 
-Unlike previous versions that required separate infrastructure and configuration steps, v4.x uses **CloudFormation UserData** to bootstrap the entire stack:
+Unlike traditional EC2-based deployments, ECS Fargate provides **serverless container orchestration**:
 
 ```
-CloudFormation → EC2 UserData → Install Docker → Pull image → Run container
+GitHub Push (tag) → GitHub Actions → Build & Push to ECR → Deploy to ECS Fargate
 ```
 
 ### Architecture Overview
@@ -30,21 +30,23 @@ CloudFormation → EC2 UserData → Install Docker → Pull image → Run contai
 
 | Aspect       | Implementation                                     |
 | ------------ | -------------------------------------------------- |
-| Runtime      | Container                                          |
+| Runtime      | Container on Fargate                               |
 | Dependencies | Bundled in image                                   |
 | Isolation    | Fully isolated                                     |
-| Portability  | Any Docker host                                    |
-| Updates      | Pull new image                                     |
-| Rollback     | `docker compose down && up` with old tag           |
+| Portability  | Any Docker host / ECS                              |
+| Updates      | Push new image, redeploy service                   |
+| Rollback     | Deploy previous image tag                          |
+| Logging      | CloudWatch Logs                                    |
 
-### Why Docker?
+### Why ECS Fargate?
 
-1. **Immutable artifacts**: The image is the same everywhere (dev, staging, prod)
-2. **Isolation**: App doesn't pollute or depend on host system
-3. **Portability**: Runs anywhere Docker runs (cloud, local, CI)
-4. **Version pinning**: `image:v4.0.0` guarantees exact version
+1. **No servers to manage**: AWS handles the underlying infrastructure
+2. **Pay per use**: Only pay for vCPU and memory while tasks run
+3. **Automatic scaling**: Scale tasks up/down based on demand
+4. **Integrated with ECR**: Native Docker image registry
+5. **Built-in logging**: CloudWatch Logs integration
 
-**Key learning**: Containers decouple the application from the host, making deployments reproducible and rollbacks trivial.
+**Key learning**: Serverless containers eliminate infrastructure management while maintaining the benefits of containerization.
 
 ## Installation
 
@@ -105,110 +107,97 @@ hello-world -b 127.0.0.1 -p 3000   # http://127.0.0.1:3000
 
 ## AWS Deployment
 
-Deployment is a **single-step process** using CloudFormation with UserData:
+Deployment is a **two-step process**:
 
-**CloudFormation** → Provisions infrastructure AND configures the instance (installs Docker, deploys the container)
+1. **Deploy infrastructure** — CloudFormation creates ECR, ECS cluster, networking, and IAM roles
+2. **Push container image** — CI/CD builds and pushes the image to ECR, ECS pulls and runs it
 
 ### Quick Start
 
 ```bash
-# Step 1: Deploy infrastructure with CloudFormation
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1
+# Step 1: Deploy infrastructure (first time only)
+make deploy
 
-# Step 2: Get the EC2 public IP
-IP=$(aws cloudformation describe-stacks \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --query 'Stacks[0].Outputs[?OutputKey==`PublicIP`].OutputValue' \
-  --output text)
+# Step 2: Build and push Docker image to ECR
+make ecr-login
+make ecr-push
 
-# Step 3: Test the deployment (wait ~2 min for UserData to complete)
-curl http://$IP:49000
+# Step 3: Get the service public IP
+make status
+
+# Step 4: Test the deployment
+curl http://<PUBLIC_IP>:49000
 ```
 
 ### What CloudFormation Creates
 
 The CloudFormation template (`infra/cloudformation.yml`) creates:
 
-| Resource         | Description                    |
-| ---------------- | ------------------------------ |
-| VPC              | 10.0.0.0/16 with DNS support   |
-| Subnet           | Public subnet 10.0.1.0/24      |
-| Internet Gateway | For public internet access     |
-| Security Group   | Ports 22 (SSH) and 49000 (app) |
-| EC2 Instance     | t3a.micro with Ubuntu 24.04 LTS |
-
-### What UserData Installs
-
-The EC2 UserData script automatically:
-
-| Task                   | Description                              |
-| ---------------------- | ---------------------------------------- |
-| Install Docker         | Docker Engine + Compose plugin           |
-| Download docker-compose| Fetches from GitHub repository           |
-| Start container        | Runs with `docker compose up -d`         |
+| Resource            | Description                              |
+| ------------------- | ---------------------------------------- |
+| ECR Repository      | Container image registry                 |
+| VPC                 | 10.0.0.0/16 with DNS support             |
+| Subnet              | Public subnet 10.0.1.0/24                |
+| Internet Gateway    | For public internet access               |
+| Security Group      | Port 49000 (application)                 |
+| ECS Cluster         | Fargate cluster                          |
+| ECS Task Definition | 0.25 vCPU, 512MB memory                  |
+| ECS Service         | Runs 1 task with public IP               |
+| CloudWatch Logs     | Application logs (7-day retention)       |
+| IAM Role            | Task execution role for ECR/Logs access  |
 
 ### CloudFormation Parameters
 
-| Parameter     | Description                 | Default       |
-| ------------- | --------------------------- | ------------- |
-| `KeyName`   | EC2 Key Pair for SSH access | _(none)_      |
-| `AllowedIP` | CIDR for SSH access         | `0.0.0.0/0`   |
+| Parameter     | Description                     | Default       |
+| ------------- | ------------------------------- | ------------- |
+| `ImageTag`    | Docker image tag to deploy      | _(required)_  |
+| `AllowedIP`   | CIDR for application access     | `0.0.0.0/0`   |
 
-### SSH Access (Optional)
+### Makefile Commands
 
-To enable SSH, create a key pair and pass it to CloudFormation:
+| Command         | Description                              |
+| --------------- | ---------------------------------------- |
+| `make deploy`   | Deploy CloudFormation stack              |
+| `make delete`   | Delete CloudFormation stack              |
+| `make ecr-login`| Authenticate Docker to ECR               |
+| `make ecr-push` | Build and push image to ECR              |
+| `make redeploy` | Force new ECS deployment                 |
+| `make status`   | Show service status and public IP        |
+| `make logs`     | Tail CloudWatch logs                     |
+
+### View Logs
 
 ```bash
-# Create key pair
-aws ec2 create-key-pair \
-  --key-name hello-world-key \
-  --region eu-west-1 \
-  --query 'KeyMaterial' \
-  --output text > ~/.ssh/hello-world-key.pem
-chmod 600 ~/.ssh/hello-world-key.pem
+# Using Makefile
+make logs
 
-# Deploy with SSH access
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --parameter-overrides KeyName=hello-world-key
-
-# Connect
-ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP
+# Or manually
+aws logs tail /ecs/hello-world-ecr-ecs-fargate --follow
 ```
 
-### Service Management
+### Force Redeployment
+
+After pushing a new image with the same tag:
 
 ```bash
-# Check container status
-ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP \
-  "sudo docker compose -f /opt/hello-world/docker-compose.yml ps"
-
-# View logs
-ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP \
-  "sudo docker compose -f /opt/hello-world/docker-compose.yml logs -f"
-
-# Restart service
-ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP \
-  "sudo docker compose -f /opt/hello-world/docker-compose.yml restart"
+make redeploy
 ```
 
 ### Cleanup
 
 ```bash
-aws cloudformation delete-stack \
-  --stack-name hello-world \
-  --region eu-west-1
+make delete
 ```
 
 ### GitHub Actions Deployment
 
-The `deploy.yml` workflow runs on release or manual trigger.
+The `release.yml` workflow runs on tag push (`v*-ecr-ecs-fargate`) or manual trigger.
+
+**Pipeline stages:**
+1. **lint** — Ruff check and format validation
+2. **test** — pytest execution
+3. **build** — Build wheel/sdist, create GitHub release
+4. **docker** — Build and push to ECR
 
 **Required secrets:**
 
@@ -221,6 +210,17 @@ The `deploy.yml` workflow runs on release or manual trigger.
 gh secret set AWS_ACCESS_KEY_ID --body "your-key"
 gh secret set AWS_SECRET_ACCESS_KEY --body "your-secret"
 
-# Trigger manual deployment
-gh workflow run deploy.yml
+# Create a release tag to trigger deployment
+git tag v4.3.3-ecr-ecs-fargate
+git push origin v4.3.3-ecr-ecs-fargate
 ```
+
+## Documentation
+
+| Document | Description |
+| -------- | ----------- |
+| [CLAUDE.md](CLAUDE.md) | Claude Code instructions and project reference |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines and commit format |
+| [infra/README.md](infra/README.md) | Infrastructure deployment details |
+| [infra/docs/ARCHITECTURE.md](infra/docs/ARCHITECTURE.md) | Detailed architecture documentation |
+| [.github/workflows/README.md](.github/workflows/README.md) | CI/CD workflow documentation |
