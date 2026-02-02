@@ -1,3 +1,9 @@
+## v5.4.2 (2026-02-02)
+
+### Fix
+
+- **deploy**: use ansible_facts syntax to avoid deprecation warning
+
 ## v5.4.1 (2026-02-02)
 
 ## v5.4.0 (2026-02-02)
