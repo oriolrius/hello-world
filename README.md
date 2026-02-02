@@ -4,48 +4,46 @@ A teaching project that demonstrates the evolution of DevOps practices. The appl
 
 ## What This Version Demonstrates (v5.x)
 
-This version introduces **Configuration Management** with Ansible, separating infrastructure provisioning from application deployment:
+This version introduces **Containerization** with Docker and **Configuration Management** with Ansible:
 
-| Practice | Implementation |
-|----------|----------------|
-| Infrastructure as Code | AWS CloudFormation (unchanged from v3.x) |
-| Configuration Management | **Ansible playbooks** |
-| Separation of Concerns | CloudFormation = infrastructure, Ansible = app config |
-| Idempotent Deployments | Ansible tasks can run multiple times safely |
-| Reusable Configuration | Playbooks work on any Ubuntu server |
+| Practice                 | Implementation                      |
+| ------------------------ | ----------------------------------- |
+| Containerization         | Docker image with multi-stage build |
+| Container Registry       | GitHub Container Registry (ghcr.io) |
+| Container Orchestration  | Docker Compose for deployment       |
+| Infrastructure           | AWS CloudFormation                  |
+| Configuration Management | Ansible deploys Docker + Compose    |
 
-### Evolution from v3.x
+### Two-Step Deployment
 
-- **v3.x**: CloudFormation UserData script runs once at instance launch — updating requires destroying and recreating
-- **v5.x**: **Ansible playbooks** can be re-run anytime to update the application without touching infrastructure
+v5.x separates infrastructure from configuration:
 
 ```
-v3.x: CloudFormation deploys EC2 + installs app (one-time, coupled)
-v5.x: CloudFormation deploys EC2, then Ansible installs app (separate, repeatable)
+CloudFormation → EC2 instance (infrastructure)
+Ansible → Install Docker → Pull image → Run container (configuration)
 ```
 
 ### Architecture Overview
 
 ![Architecture Overview](assets/diagrams/architecture.png)
 
-### Key Differences from v3.x
+### Key Features
 
-| Aspect | v3.x (UserData) | v5.x (Ansible) |
-|--------|-----------------|----------------|
-| When it runs | Once at launch | Anytime on demand |
-| Update app | Destroy/recreate stack | Re-run playbook |
-| Idempotent | No | Yes |
-| Testable locally | No | Yes (Vagrant, Docker) |
-| Reusable | No | Yes (any Ubuntu host) |
+| Aspect       | Implementation                             |
+| ------------ | ------------------------------------------ |
+| Runtime      | Container                                  |
+| Dependencies | Bundled in image                           |
+| Isolation    | Fully isolated                             |
+| Portability  | Any Docker host                            |
+| Updates      | Re-run Ansible playbook                    |
+| Rollback     | `docker compose down && up` with old tag   |
 
-**Key learning**: Separating infrastructure (what exists) from configuration (how it's set up) enables faster iterations and safer updates.
+### Why Docker + Ansible?
 
-### Why Ansible?
-
-1. **Idempotent**: Running the playbook twice produces the same result
-2. **Declarative**: Describe desired state, not steps
-3. **Agentless**: Only needs SSH access, no agent on target
-4. **Human-readable**: YAML-based, easy to review
+1. **Immutable artifacts**: Docker image is the same everywhere
+2. **Repeatable configuration**: Ansible can run multiple times safely
+3. **Separation of concerns**: Infrastructure vs application deployment
+4. **Version pinning**: `image:v5.0.0` guarantees exact version
 
 ## Installation
 
@@ -91,10 +89,10 @@ uv build                        # build .tar.gz and .whl
 
 ## Parameters
 
-| Flag | Description | Default |
-|------|-------------|---------|
+| Flag           | Description  | Default     |
+| -------------- | ------------ | ----------- |
 | `-b, --bind` | Bind address | `0.0.0.0` |
-| `-p, --port` | Port number | `49000` |
+| `-p, --port` | Port number  | `49000`   |
 
 ## Examples
 
@@ -106,93 +104,94 @@ hello-world -b 127.0.0.1 -p 3000   # http://127.0.0.1:3000
 
 ## AWS Deployment
 
-Deploy to AWS EC2 using CloudFormation.
+Deployment is a **two-step process**:
 
-### Infrastructure
+1. **CloudFormation** → Provisions AWS infrastructure (VPC, EC2, Security Groups)
+2. **Ansible** → Configures the instance (installs Docker, deploys the container)
 
-The CloudFormation template (`infra/cloudformation.yml`) creates:
-
-| Resource | Description |
-|----------|-------------|
-| VPC | 10.0.0.0/16 with DNS support |
-| Subnet | Public subnet 10.0.1.0/24 |
-| Internet Gateway | For public internet access |
-| Security Group | Ports 22 (SSH) and 49000 (app) |
-| EC2 Instance | t3.micro with Ubuntu 24.04 LTS |
-
-The instance runs hello-world as a systemd service on port 49000.
-
-### CloudFormation Parameters
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `KeyName` | EC2 Key Pair for SSH access | _(none)_ |
-| `AllowedIP` | CIDR for SSH access | `0.0.0.0/0` |
-
-### SSH Access
-
-To enable SSH access, create a key pair first:
+### Quick Start
 
 ```bash
-# Create key pair and save private key
+# Step 1: Create SSH key pair
 aws ec2 create-key-pair \
   --key-name hello-world-key \
   --region eu-west-1 \
   --query 'KeyMaterial' \
   --output text > ~/.ssh/hello-world-key.pem
-
-# Set correct permissions
 chmod 600 ~/.ssh/hello-world-key.pem
-```
 
-Then deploy with the key:
-
-```bash
+# Step 2: Deploy infrastructure with CloudFormation
 aws cloudformation deploy \
   --template-file infra/cloudformation.yml \
   --stack-name hello-world \
   --region eu-west-1 \
   --parameter-overrides KeyName=hello-world-key
-```
 
-Connect to the instance:
-
-```bash
-# Get public IP
+# Step 3: Get the EC2 public IP
 IP=$(aws cloudformation describe-stacks \
   --stack-name hello-world \
   --region eu-west-1 \
   --query 'Stacks[0].Outputs[?OutputKey==`PublicIP`].OutputValue' \
   --output text)
 
-# SSH into the instance
-ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP
+# Step 4: Create Ansible inventory
+echo "[hello-world]
+$IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/hello-world-key.pem" > deploy/inventory.ini
+
+# Step 5: Deploy the application with Ansible
+uv run ansible-galaxy collection install -r deploy/requirements.yml
+cd deploy && uv run ansible-playbook -i inventory.ini playbook.yml
+
+# Step 6: Test the deployment
+curl http://$IP:49000
 ```
 
-### Manual Deployment
+### What CloudFormation Creates
+
+| Resource         | Description                    |
+| ---------------- | ------------------------------ |
+| VPC              | 10.0.0.0/16 with DNS support   |
+| Subnet           | Public subnet 10.0.1.0/24      |
+| Internet Gateway | For public internet access     |
+| Security Group   | Ports 22 (SSH) and 49000 (app) |
+| EC2 Instance     | t3a.micro with Ubuntu 24.04 LTS |
+
+### What Ansible Installs
+
+| Task             | Description                    |
+| ---------------- | ------------------------------ |
+| Install Docker   | Docker Engine + Compose plugin |
+| Deploy container | Pull image from ghcr.io        |
+| Start service    | Run with Docker Compose        |
+
+See [`deploy/README.md`](deploy/README.md) for detailed Ansible documentation.
+
+### CloudFormation Parameters
+
+| Parameter     | Description                 | Default       |
+| ------------- | --------------------------- | ------------- |
+| `KeyName`   | EC2 Key Pair for SSH access | _(none)_      |
+| `AllowedIP` | CIDR for SSH access         | `0.0.0.0/0`   |
+
+### Service Management
 
 ```bash
-# Deploy stack (without SSH)
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1
+# Check container status
+ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP \
+  "sudo docker compose -f /opt/hello-world/docker-compose.yml ps"
 
-# Deploy stack (with SSH access)
-aws cloudformation deploy \
-  --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --parameter-overrides KeyName=hello-world-key
+# View logs
+ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP \
+  "sudo docker compose -f /opt/hello-world/docker-compose.yml logs -f"
 
-# Get outputs (IP, URL)
-aws cloudformation describe-stacks \
-  --stack-name hello-world \
-  --region eu-west-1 \
-  --query 'Stacks[0].Outputs' \
-  --output table
+# Restart service
+ssh -i ~/.ssh/hello-world-key.pem ubuntu@$IP \
+  "sudo docker compose -f /opt/hello-world/docker-compose.yml restart"
+```
 
-# Delete stack
+### Cleanup
+
+```bash
 aws cloudformation delete-stack \
   --stack-name hello-world \
   --region eu-west-1
@@ -200,9 +199,10 @@ aws cloudformation delete-stack \
 
 ### GitHub Actions Deployment
 
-The `deploy.yml` workflow runs on release or manual trigger.
+The `release.yml` workflow runs on tag push or manual trigger.
 
 **Required secrets:**
+
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `AWS_SESSION_TOKEN` _(if using SSO)_
@@ -213,5 +213,5 @@ gh secret set AWS_ACCESS_KEY_ID --body "your-key"
 gh secret set AWS_SECRET_ACCESS_KEY --body "your-secret"
 
 # Trigger manual deployment
-gh workflow run deploy.yml
+gh workflow run release.yml
 ```

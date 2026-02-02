@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Tests
+tests/
+.pytest_cache/
+
+# Infrastructure
+infra/
+deploy/
+
+# Docker
+docker/
+
+# Docs (keep README.md for build)
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
