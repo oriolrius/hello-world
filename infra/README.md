@@ -1,41 +1,78 @@
 # Infrastructure
 
-AWS CloudFormation template for deploying hello-world infrastructure.
+AWS CloudFormation template for deploying hello-world on ECS Fargate.
 
 ## Quick Start
 
 ```bash
-# Deploy
+# Deploy (requires ImageTag parameter)
+make deploy
+
+# Or manually:
 aws cloudformation deploy \
   --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
+  --stack-name hello-world-ecr-ecs-fargate \
+  --parameter-overrides ImageTag=v4.3.3-ecr-ecs-fargate \
+  --capabilities CAPABILITY_NAMED_IAM \
   --region eu-west-1
 
-# Get service URL
-aws cloudformation describe-stacks \
-  --stack-name hello-world \
-  --query 'Stacks[0].Outputs[?OutputKey==`ServiceURL`].OutputValue' \
-  --output text
+# Get service public IP
+make status
+
+# Or manually:
+CLUSTER=hello-world-ecr-ecs-fargate
+SERVICE=hello-world-ecr-ecs-fargate
+TASK_ARN=$(aws ecs list-tasks --cluster $CLUSTER --service-name $SERVICE --query 'taskArns[0]' --output text)
+aws ecs describe-tasks --cluster $CLUSTER --tasks $TASK_ARN \
+  --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text | \
+  xargs -I {} aws ec2 describe-network-interfaces --network-interface-ids {} \
+  --query 'NetworkInterfaces[0].Association.PublicIp' --output text
 
 # Destroy
-aws cloudformation delete-stack --stack-name hello-world
+make delete
+
+# Or manually:
+aws cloudformation delete-stack --stack-name hello-world-ecr-ecs-fargate
 ```
 
 ## Stack Overview
 
-Creates a minimal AWS environment:
+Creates a serverless container environment on AWS:
 
-- VPC with public subnet
-- Internet Gateway with routing
-- Security Group (ports 22, 49000)
-- EC2 instance (t3.micro, Ubuntu 24.04)
+| Resource | Description |
+|----------|-------------|
+| **ECR Repository** | Container image registry with lifecycle policy (keeps last 10 images) |
+| **VPC** | Virtual network (10.0.0.0/16) with DNS enabled |
+| **Public Subnet** | 10.0.1.0/24 with auto-assign public IP |
+| **Internet Gateway** | Enables internet access |
+| **Security Group** | Allows inbound TCP port 49000 |
+| **ECS Cluster** | Fargate cluster for running containers |
+| **ECS Task Definition** | 0.25 vCPU, 512MB memory, awsvpc network mode |
+| **ECS Service** | Runs 1 task with public IP assignment |
+| **CloudWatch Log Group** | Application logs with 7-day retention |
+| **IAM Role** | Task execution role for ECR pull and logging |
 
 ## Parameters
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `KeyName` | EC2 Key Pair for SSH | (none) |
-| `AllowedIP` | CIDR for SSH access | 0.0.0.0/0 |
+| `ImageTag` | Docker image tag to deploy (required) | - |
+| `AllowedIP` | CIDR for application access | 0.0.0.0/0 |
+
+Example image tags:
+- `v4.3.3-ecr-ecs-fargate` (version tag)
+- `sha-abc1234-ecr-ecs-fargate` (commit SHA tag)
+
+## Outputs
+
+| Output | Description |
+|--------|-------------|
+| `ECRRepositoryUri` | ECR repository URI for pushing images |
+| `ECSClusterName` | ECS cluster name |
+| `ECSServiceName` | ECS service name |
+| `VPCId` | VPC ID |
+| `SubnetId` | Public subnet ID |
+| `SecurityGroupId` | Security group ID |
 
 ## Required AWS Permissions
 
@@ -50,10 +87,37 @@ The IAM user or role deploying this stack needs the following permissions:
 | `cloudformation:DeleteStack` | Delete the stack |
 | `cloudformation:DescribeStacks` | Get stack status and outputs |
 | `cloudformation:DescribeStackEvents` | View deployment progress |
-| `cloudformation:CreateChangeSet` | Preview changes (used by `aws cloudformation deploy`) |
+| `cloudformation:CreateChangeSet` | Preview changes |
 | `cloudformation:ExecuteChangeSet` | Apply changes |
 | `cloudformation:DescribeChangeSet` | View changeset details |
 | `cloudformation:DeleteChangeSet` | Clean up changesets |
+
+### ECR (Container Registry)
+
+| Action | Purpose |
+|--------|---------|
+| `ecr:CreateRepository` / `ecr:DeleteRepository` | Manage ECR repository |
+| `ecr:DescribeRepositories` | List repositories |
+| `ecr:PutLifecyclePolicy` | Set image retention policy |
+| `ecr:PutImageScanningConfiguration` | Enable vulnerability scanning |
+| `ecr:GetAuthorizationToken` | Authenticate to ECR |
+| `ecr:BatchCheckLayerAvailability` | Check image layers |
+| `ecr:GetDownloadUrlForLayer` | Pull image layers |
+| `ecr:BatchGetImage` | Pull images |
+| `ecr:PutImage` | Push images |
+| `ecr:InitiateLayerUpload` / `ecr:UploadLayerPart` / `ecr:CompleteLayerUpload` | Push image layers |
+
+### ECS (Container Orchestration)
+
+| Action | Purpose |
+|--------|---------|
+| `ecs:CreateCluster` / `ecs:DeleteCluster` | Manage ECS cluster |
+| `ecs:DescribeClusters` | Get cluster details |
+| `ecs:RegisterTaskDefinition` / `ecs:DeregisterTaskDefinition` | Manage task definitions |
+| `ecs:DescribeTaskDefinition` | Get task definition details |
+| `ecs:CreateService` / `ecs:DeleteService` / `ecs:UpdateService` | Manage ECS service |
+| `ecs:DescribeServices` | Get service details |
+| `ecs:ListTasks` / `ecs:DescribeTasks` | List and describe running tasks |
 
 ### EC2 (Networking)
 
@@ -66,27 +130,31 @@ The IAM user or role deploying this stack needs the following permissions:
 | `ec2:CreateRouteTable` / `ec2:DeleteRouteTable` | Manage route table |
 | `ec2:CreateRoute` / `ec2:DeleteRoute` | Manage routes |
 | `ec2:AssociateRouteTable` / `ec2:DisassociateRouteTable` | Link subnet to route table |
-| `ec2:ModifyVpcAttribute` | Enable DNS settings |
-
-### EC2 (Security & Instances)
-
-| Action | Purpose |
-|--------|---------|
 | `ec2:CreateSecurityGroup` / `ec2:DeleteSecurityGroup` | Manage security group |
 | `ec2:AuthorizeSecurityGroupIngress` / `ec2:RevokeSecurityGroupIngress` | Manage inbound rules |
-| `ec2:RunInstances` / `ec2:TerminateInstances` | Manage EC2 instance |
-| `ec2:DescribeInstances` | Get instance details |
-| `ec2:DescribeImages` | Find AMI |
-| `ec2:DescribeAvailabilityZones` | List AZs |
 | `ec2:DescribeVpcs` / `ec2:DescribeSubnets` / `ec2:DescribeSecurityGroups` | Describe resources |
+| `ec2:DescribeNetworkInterfaces` | Get task public IP |
+| `ec2:ModifyVpcAttribute` | Enable DNS settings |
 | `ec2:CreateTags` | Tag resources |
 
-### EC2 (SSH Access - Optional)
+### IAM (Roles)
 
 | Action | Purpose |
 |--------|---------|
-| `ec2:CreateKeyPair` / `ec2:DeleteKeyPair` | Manage SSH key pairs |
-| `ec2:DescribeKeyPairs` | List key pairs |
+| `iam:CreateRole` / `iam:DeleteRole` | Manage ECS task execution role |
+| `iam:AttachRolePolicy` / `iam:DetachRolePolicy` | Attach managed policies |
+| `iam:PutRolePolicy` / `iam:DeleteRolePolicy` | Manage inline policies |
+| `iam:GetRole` | Get role details |
+| `iam:PassRole` | Allow ECS to use the role |
+
+### CloudWatch Logs
+
+| Action | Purpose |
+|--------|---------|
+| `logs:CreateLogGroup` / `logs:DeleteLogGroup` | Manage log group |
+| `logs:PutRetentionPolicy` | Set log retention |
+| `logs:DescribeLogGroups` / `logs:DescribeLogStreams` | List logs |
+| `logs:GetLogEvents` | Read logs |
 
 ### Minimum IAM Policy
 
@@ -96,10 +164,30 @@ The IAM user or role deploying this stack needs the following permissions:
   "Statement": [
     {
       "Effect": "Allow",
+      "Action": "cloudformation:*",
+      "Resource": "arn:aws:cloudformation:*:*:stack/hello-world-ecr-ecs-fargate/*"
+    },
+    {
+      "Effect": "Allow",
       "Action": [
-        "cloudformation:*"
+        "ecr:CreateRepository", "ecr:DeleteRepository", "ecr:DescribeRepositories",
+        "ecr:PutLifecyclePolicy", "ecr:PutImageScanningConfiguration",
+        "ecr:GetAuthorizationToken", "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage", "ecr:PutImage",
+        "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload",
+        "ecr:TagResource"
       ],
-      "Resource": "arn:aws:cloudformation:*:*:stack/hello-world/*"
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:CreateCluster", "ecs:DeleteCluster", "ecs:DescribeClusters",
+        "ecs:RegisterTaskDefinition", "ecs:DeregisterTaskDefinition", "ecs:DescribeTaskDefinition",
+        "ecs:CreateService", "ecs:DeleteService", "ecs:UpdateService", "ecs:DescribeServices",
+        "ecs:ListTasks", "ecs:DescribeTasks", "ecs:TagResource"
+      ],
+      "Resource": "*"
     },
     {
       "Effect": "Allow",
@@ -113,12 +201,29 @@ The IAM user or role deploying this stack needs the following permissions:
         "ec2:AssociateRouteTable", "ec2:DisassociateRouteTable",
         "ec2:CreateSecurityGroup", "ec2:DeleteSecurityGroup", "ec2:DescribeSecurityGroups",
         "ec2:AuthorizeSecurityGroupIngress", "ec2:RevokeSecurityGroupIngress",
-        "ec2:RunInstances", "ec2:TerminateInstances", "ec2:DescribeInstances",
-        "ec2:DescribeImages", "ec2:DescribeAvailabilityZones",
-        "ec2:CreateKeyPair", "ec2:DeleteKeyPair", "ec2:DescribeKeyPairs",
+        "ec2:DescribeNetworkInterfaces", "ec2:DescribeAvailabilityZones",
         "ec2:CreateTags"
       ],
       "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole", "iam:DeleteRole", "iam:GetRole",
+        "iam:AttachRolePolicy", "iam:DetachRolePolicy",
+        "iam:PutRolePolicy", "iam:DeleteRolePolicy",
+        "iam:PassRole", "iam:TagRole"
+      ],
+      "Resource": "arn:aws:iam::*:role/hello-world-ecr-ecs-fargate-*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup", "logs:DeleteLogGroup",
+        "logs:PutRetentionPolicy", "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams", "logs:GetLogEvents", "logs:TagLogGroup"
+      ],
+      "Resource": "arn:aws:logs:*:*:log-group:/ecs/hello-world-ecr-ecs-fargate*"
     }
   ]
 }
@@ -131,8 +236,15 @@ The IAM user or role deploying this stack needs the following permissions:
 | File | Description |
 |------|-------------|
 | `cloudformation.yml` | CloudFormation template |
-| `docs/` | Architecture documentation |
+| `docs/ARCHITECTURE.md` | Detailed architecture documentation |
+| `docs/infra-architecture.drawio` | Architecture diagram (editable) |
+| `docs/infra-architecture.png` | Architecture diagram (rendered) |
 
 ## Architecture
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed documentation.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed documentation including:
+- Resource diagrams
+- Deployment procedures
+- Cost estimation
+- Security considerations
+- Troubleshooting guide
