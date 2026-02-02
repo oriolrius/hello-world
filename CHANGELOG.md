@@ -1,3 +1,13 @@
+## v4.3.0 (2026-02-02)
+
+### Fix
+
+- **infra**: use v4.x branch for docker-compose.yml download
+
+### Refactor
+
+- **infra**: replace Ansible with Docker Compose in CloudFormation
+
 ## v5.3.2 (2026-01-21)
 
 ### Fix

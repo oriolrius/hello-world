@@ -129,7 +129,7 @@ Resources:
           curl -fsSL https://raw.githubusercontent.com/oriolrius/hello-world/refs/heads/v4.x/docker/docker-compose.yml -o docker-compose.yml
 
           # Run with docker compose
-                    docker compose up -d
+          docker compose up -d
       Tags:
         - Key: Name
           Value: hello-world
