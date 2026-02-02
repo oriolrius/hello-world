@@ -1,6 +1,6 @@
 # Ansible Deployment Architecture - v5.0.x
 
-This document describes the Ansible deployment architecture for the hello-world application version 4.0.x.
+This document describes the Ansible deployment architecture for the hello-world application version 5.0.x.
 
 ## Architecture Diagram
 
@@ -15,7 +15,7 @@ This document describes the Ansible deployment architecture for the hello-world 
 
 ## Overview
 
-The deployment uses Ansible to configure EC2 instances provisioned by CloudFormation. The playbook installs the hello-world application and configures it as a systemd service.
+The deployment uses Ansible to configure EC2 instances provisioned by CloudFormation. The playbook installs Docker and deploys the hello-world application as a container using Docker Compose.
 
 ## Deployment Flow
 
@@ -26,23 +26,23 @@ The deployment uses Ansible to configure EC2 instances provisioned by CloudForma
 └─────────┬───────────┘
           │ SSH
 ┌─────────▼───────────┐
-│ 1. Install curl     │
-│    (apt package)    │
+│ 1. Install packages │
+│    (apt: curl, ca)  │
 └─────────┬───────────┘
           │
 ┌─────────▼───────────┐
-│ 2. Install uv       │
-│    (astral.sh)      │
+│ 2. Add Docker repo  │
+│    (GPG key + apt)  │
 └─────────┬───────────┘
           │
 ┌─────────▼───────────┐
-│ 3. Install app      │
-│    (uv tool)        │
+│ 3. Install Docker   │
+│    (CE + Compose)   │
 └─────────┬───────────┘
           │
 ┌─────────▼───────────┐
-│ 4. Configure        │
-│    systemd service  │
+│ 4. Deploy container │
+│    (Docker Compose) │
 └─────────────────────┘
 ```
 
@@ -56,77 +56,100 @@ Installs system dependencies using apt:
 - name: Install required packages
   apt:
     name:
+      - ca-certificates
       - curl
     state: present
     update_cache: true
 ```
 
-### 2. Install uv
+### 2. Setup Docker Repository
 
-Installs the uv package manager from astral.sh:
-
-```yaml
-- name: Install uv
-  shell: curl -LsSf https://astral.sh/uv/install.sh | sh
-  args:
-    creates: /root/.local/bin/uv
-```
-
-### 3. Install hello-world
-
-Installs the application as a uv tool from GitHub:
+Adds Docker's official GPG key and apt repository:
 
 ```yaml
-- name: Install hello-world with uv
-  shell: /root/.local/bin/uv tool install hello-world --from git+https://github.com/oriolrius/hello-world --force
-  environment:
-    PATH: "/root/.local/bin:{{ ansible_facts['env']['PATH'] }}"
-```
+- name: Create Docker keyring directory
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
 
-### 4. Create systemd Service
-
-Deploys the systemd service unit file from template:
-
-```yaml
-- name: Create systemd service
-  template:
-    src: hello-world.service.j2
-    dest: /etc/systemd/system/hello-world.service
+- name: Download Docker GPG key
+  get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
-  notify: Restart hello-world
+
+- name: Add Docker repository
+  apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+    filename: docker
 ```
 
-### 5. Enable and Start Service
+### 3. Install Docker
 
-Enables the service to start on boot and starts it immediately:
+Installs Docker Engine and Compose plugin:
 
 ```yaml
-- name: Enable and start hello-world service
+- name: Install Docker packages
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
+    state: present
+    update_cache: true
+
+- name: Start and enable Docker service
   systemd:
-    name: hello-world
+    name: docker
     enabled: true
     state: started
-    daemon_reload: true
+```
+
+### 4. Deploy Application
+
+Creates app directory and deploys via Docker Compose:
+
+```yaml
+- name: Create application directory
+  file:
+    path: "{{ app_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy docker-compose.yml
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ app_dir }}/docker-compose.yml"
+    mode: '0644'
+  notify: Restart hello-world
+
+- name: Pull and start hello-world container
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    state: present
+    pull: always
 ```
 
 ## Playbook Variables
 
-| Variable   | Default   | Description                    |
-|------------|-----------|--------------------------------|
-| app_port   | 49000     | Port the application listens on|
-| app_bind   | 0.0.0.0   | Address to bind to             |
+| Variable    | Default           | Description                     |
+|-------------|-------------------|---------------------------------|
+| `app_dir`   | /opt/hello-world  | Installation directory          |
+| `image_tag` | v5                | Docker image tag to deploy      |
 
-## Systemd Service Unit
+## Docker Compose Configuration
 
-The service is configured with:
+The application runs as a Docker container:
 
-| Setting      | Value                                          |
-|--------------|------------------------------------------------|
-| Type         | simple                                         |
-| User         | root                                           |
-| ExecStart    | `/root/.local/bin/hello-world --bind 0.0.0.0 --port 49000` |
-| Restart      | always                                         |
-| RestartSec   | 5 seconds                                      |
+| Setting        | Value                                |
+|----------------|--------------------------------------|
+| Image          | ghcr.io/oriolrius/hello-world:v5     |
+| Port mapping   | 49000:49000                          |
+| Restart policy | unless-stopped                       |
+| Health check   | HTTP GET http://localhost:49000/     |
 
 ## Ansible Configuration
 
@@ -148,14 +171,13 @@ The service is configured with:
 
 ### Restart hello-world
 
-Triggered when the service configuration changes:
+Triggered when the docker-compose.yml changes:
 
 ```yaml
 - name: Restart hello-world
-  systemd:
-    name: hello-world
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
     state: restarted
-    daemon_reload: true
 ```
 
 ## Manual Deployment
@@ -174,35 +196,46 @@ Triggered when the service configuration changes:
    <ec2-public-ip> ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/your-key.pem
    ```
 
-2. Run the playbook:
+2. Install Ansible collection:
    ```bash
-   cd deploy
-   ansible-playbook -i inventory.ini playbook.yml
+   uv run ansible-galaxy collection install -r deploy/requirements.yml
    ```
 
-3. Verify the service:
+3. Run the playbook:
+   ```bash
+   cd deploy
+   uv run ansible-playbook -i inventory.ini playbook.yml
+   ```
+
+4. Verify the service:
    ```bash
    curl http://<ec2-public-ip>:49000/
    ```
 
 ## Troubleshooting
 
-### Check Service Status
+### Check Container Status
 
 ```bash
-ssh ubuntu@<ec2-ip> "sudo systemctl status hello-world"
+ssh ubuntu@<ec2-ip> "sudo docker compose -f /opt/hello-world/docker-compose.yml ps"
 ```
 
-### View Service Logs
+### View Container Logs
 
 ```bash
-ssh ubuntu@<ec2-ip> "sudo journalctl -u hello-world -f"
+ssh ubuntu@<ec2-ip> "sudo docker compose -f /opt/hello-world/docker-compose.yml logs -f"
 ```
 
-### Restart Service
+### Restart Container
 
 ```bash
-ssh ubuntu@<ec2-ip> "sudo systemctl restart hello-world"
+ssh ubuntu@<ec2-ip> "sudo docker compose -f /opt/hello-world/docker-compose.yml restart"
+```
+
+### Check Docker Service
+
+```bash
+ssh ubuntu@<ec2-ip> "sudo systemctl status docker"
 ```
 
 ## Diagram Source
@@ -213,8 +246,7 @@ To regenerate the diagram:
 
 ```bash
 cd tools
-source .venv/bin/activate
-python generate_deploy_diagram.py
+uv run python generate_deploy_diagram.py
 ```
 
 The editable `.drawio` file is also available for manual adjustments.

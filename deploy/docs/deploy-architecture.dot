@@ -1,5 +1,5 @@
 digraph "Ansible Deployment - v5.0.x" {
-	graph [bb="0,0,214,1252",
+	graph [bb="0,0,214,1012",
 		fontcolor="#2D3436",
 		fontname="Sans-Serif",
 		fontsize=14,
@@ -27,37 +27,37 @@ digraph "Ansible Deployment - v5.0.x" {
 	];
 	edge [color="#7B8894"];
 	subgraph "cluster_Control Node" {
-		graph [bb="45,1041,163,1244",
+		graph [bb="47,801,165,1004",
 			bgcolor="#E5F5FD",
 			fontname="Sans-Serif",
 			fontsize=12,
 			label="Control Node",
 			labeljust=l,
 			lheight=0.18,
-			lp="92.5,1233.5",
+			lp="94.5,993.5",
 			lwidth=1.10,
 			pencolor="#AEB6BE",
 			rankdir=LR,
 			shape=box,
 			style=rounded
 		];
-		"9142305bb553471ea7e7b8ed52bdd618"	[height=2.3056,
+		"8d63a4cbc6394a7d95da068994db28bd"	[height=2.3056,
 			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/iac/ansible.png",
 			label="Ansible
 Playbook",
-			pos="104,1132",
+			pos="106,892",
 			shape=none,
 			width=1.4028];
 	}
 	subgraph "cluster_EC2 Instance (Ubuntu 24.04)" {
-		graph [bb="13,31,201,991",
+		graph [bb="13,31,201,751",
 			bgcolor="#E5F5FD",
 			fontname="Sans-Serif",
 			fontsize=12,
 			label="EC2 Instance (Ubuntu 24.04)",
 			labeljust=l,
 			lheight=0.18,
-			lp="107,980.5",
+			lp="107,740.5",
 			lwidth=2.39,
 			pencolor="#AEB6BE",
 			rankdir=LR,
@@ -65,122 +65,93 @@ Playbook",
 			style=rounded
 		];
 		subgraph "cluster_1. System Setup" {
-			graph [bb="45,759,163,962",
+			graph [bb="47,519,165,722",
 				bgcolor="#EBF3E7",
 				fontname="Sans-Serif",
 				fontsize=12,
 				label="1. System Setup",
 				labeljust=l,
 				lheight=0.18,
-				lp="102,951.5",
+				lp="104,711.5",
 				lwidth=1.36,
 				pencolor="#AEB6BE",
 				rankdir=LR,
 				shape=box,
 				style=rounded
 			];
-			"64fddbf22e4c4b1fb3244964887f8a11"	[height=2.3056,
+			"81dfb84f85324571b6dbd3fd92148196"	[height=2.3056,
 				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/generic/os/ubuntu.png",
 				label="apt
-install curl",
-				pos="104,850",
+install packages",
+				pos="106,610",
 				shape=none,
 				width=1.4028];
 		}
-		subgraph "cluster_2. uv Installation" {
-			graph [bb="45,519,163,722",
+		subgraph "cluster_2. Docker Setup" {
+			graph [bb="47,279,165,482",
 				bgcolor="#EBF3E7",
 				fontname="Sans-Serif",
 				fontsize=12,
-				label="2. uv Installation",
+				label="2. Docker Setup",
 				labeljust=l,
 				lheight=0.18,
-				lp="102.5,711.5",
-				lwidth=1.38,
+				lp="103.5,471.5",
+				lwidth=1.35,
 				pencolor="#AEB6BE",
 				rankdir=LR,
 				shape=box,
 				style=rounded
 			];
-			"89104c2f4435464eb29876145339f592"	[height=2.3056,
-				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/programming/language/python.png",
-				label="uv
-(astral.sh)",
-				pos="104,610",
+			"2bf3772e202b46428900a65e63e760e6"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/container/docker.png",
+				label="Docker CE
++ Compose",
+				pos="106,370",
 				shape=none,
 				width=1.4028];
 		}
-		subgraph "cluster_3. App Installation" {
-			graph [bb="45,279,169,482",
+		subgraph "cluster_3. App Deployment" {
+			graph [bb="41,39,172,242",
 				bgcolor="#EBF3E7",
 				fontname="Sans-Serif",
 				fontsize=12,
-				label="3. App Installation",
+				label="3. App Deployment",
 				labeljust=l,
 				lheight=0.18,
-				lp="107,471.5",
-				lwidth=1.50,
+				lp="106.5,231.5",
+				lwidth=1.60,
 				pencolor="#AEB6BE",
 				rankdir=LR,
 				shape=box,
 				style=rounded
 			];
-			"4ffbc24c6e924689b7244c50466e9e66"	[height=2.3056,
-				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/programming/language/python.png",
+			"37d965ba487244c4b9dd435df028d75c"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/container/docker.png",
 				label="hello-world
-(uv tool)",
-				pos="104,370",
+container",
+				pos="106,130",
 				shape=none,
 				width=1.4028];
 		}
-		subgraph "cluster_4. Service Config" {
-			graph [bb="45,39,163,242",
-				bgcolor="#EBF3E7",
-				fontname="Sans-Serif",
-				fontsize=12,
-				label="4. Service Config",
-				labeljust=l,
-				lheight=0.18,
-				lp="104,231.5",
-				lwidth=1.42,
-				pencolor="#AEB6BE",
-				rankdir=LR,
-				shape=box,
-				style=rounded
-			];
-			"3ee4d94d617549fca92859e26c17b55a"	[height=2.3056,
-				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/compute/server.png",
-				label="systemd
-service",
-				pos="104,130",
-				shape=none,
-				width=1.4028];
-		}
-		"64fddbf22e4c4b1fb3244964887f8a11" -> "89104c2f4435464eb29876145339f592"	[color=green,
+		"81dfb84f85324571b6dbd3fd92148196" -> "2bf3772e202b46428900a65e63e760e6"	[color=green,
 			dir=forward,
 			fontcolor="#2D3436",
 			fontname="Sans-Serif",
 			fontsize=13,
-			pos="e,104,693.12 104,766.73 104,766.73 104,703.12 104,703.12"];
-		"89104c2f4435464eb29876145339f592" -> "4ffbc24c6e924689b7244c50466e9e66"	[color=green,
+			pos="e,106,453.12 106,526.73 106,526.73 106,463.12 106,463.12"];
+		"2bf3772e202b46428900a65e63e760e6" -> "37d965ba487244c4b9dd435df028d75c"	[color=green,
 			dir=forward,
 			fontcolor="#2D3436",
 			fontname="Sans-Serif",
 			fontsize=13,
-			pos="e,104,453.12 104,526.73 104,526.73 104,463.12 104,463.12"];
-		"4ffbc24c6e924689b7244c50466e9e66" -> "3ee4d94d617549fca92859e26c17b55a"	[color=green,
-			dir=forward,
-			fontcolor="#2D3436",
-			fontname="Sans-Serif",
-			fontsize=13,
-			pos="e,104,213.12 104,286.73 104,286.73 104,223.12 104,223.12"];
+			pos="e,106,213.12 106,286.73 106,286.73 106,223.12 106,223.12"];
 	}
-	"9142305bb553471ea7e7b8ed52bdd618" -> "64fddbf22e4c4b1fb3244964887f8a11"	[color=blue,
+	"8d63a4cbc6394a7d95da068994db28bd" -> "81dfb84f85324571b6dbd3fd92148196"	[color=blue,
 		dir=forward,
 		fontcolor="#2D3436",
 		fontname="Sans-Serif",
 		fontsize=13,
 		label=SSH,
-		lp="117.5,1006",
-		pos="e,104,933.46 104,1048.9 104,1048.9 104,943.46 104,943.46"];
+		lp="119.5,766",
+		pos="e,106,693.46 106,808.92 106,808.92 106,703.46 106,703.46"];
 }

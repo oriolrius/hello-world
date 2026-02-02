@@ -2,14 +2,13 @@
 """Generate Ansible deployment architecture diagram for v5.0.x.
 
 This script creates a visual representation of the Ansible deployment process
-including package installation, uv setup, application installation, and
-systemd service configuration.
+including package installation, Docker setup, and container deployment
+via Docker Compose.
 """
 
 from diagrams import Cluster, Diagram, Edge
-from diagrams.aws.compute import EC2
 from diagrams.generic.os import Ubuntu
-from diagrams.onprem.compute import Server
+from diagrams.onprem.container import Docker
 from diagrams.onprem.iac import Ansible
 from diagrams.programming.language import Python
 
@@ -41,22 +40,18 @@ def main():
         # Target EC2
         with Cluster("EC2 Instance (Ubuntu 24.04)"):
             with Cluster("1. System Setup"):
-                apt = Ubuntu("apt\ninstall curl")
+                apt = Ubuntu("apt\ninstall packages")
 
-            with Cluster("2. uv Installation"):
-                uv = Python("uv\n(astral.sh)")
+            with Cluster("2. Docker Setup"):
+                docker_install = Docker("Docker CE\n+ Compose")
 
-            with Cluster("3. App Installation"):
-                app = Python("hello-world\n(uv tool)")
-
-            with Cluster("4. Service Config"):
-                systemd = Server("systemd\nservice")
+            with Cluster("3. App Deployment"):
+                container = Docker("hello-world\ncontainer")
 
         # Flow
         ansible >> Edge(color="blue", label="SSH") >> apt
-        apt >> Edge(color="green") >> uv
-        uv >> Edge(color="green") >> app
-        app >> Edge(color="green") >> systemd
+        apt >> Edge(color="green") >> docker_install
+        docker_install >> Edge(color="green") >> container
 
 
 if __name__ == "__main__":
