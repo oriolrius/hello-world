@@ -10,32 +10,6 @@ Editable source: [cicd-architecture.drawio](cicd-architecture.drawio) (open with
 
 The v4-ecr-ecs-fargate release workflow provides continuous integration with Docker image publishing to Amazon ECR. Deployment to ECS Fargate is manual via Makefile.
 
-## Pipeline Flow
-
-```
-          ┌─────┐     ┌──────┐
-          │lint │     │ test │
-          └──┬──┘     └──┬───┘
-             │           │
-     ┌───────┴───────────┴───────┐
-     │                           │
-     ▼                           ▼
-┌─────────┐                 ┌─────────┐
-│  build  │                 │ docker  │
-└────┬────┘                 └─────────┘
-     │                           │
-     ▼                           ▼
-┌─────────┐                 ┌─────────┐
-│ release │                 │   ECR   │
-└─────────┘                 └─────────┘
-                                 │
-                                 ▼ (manual)
-                            ┌─────────┐
-                            │   ECS   │
-                            │ Fargate │
-                            └─────────┘
-```
-
 ## Jobs
 
 ### lint

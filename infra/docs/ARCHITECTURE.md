@@ -6,34 +6,6 @@
 
 Editable source: [infra-architecture.drawio](infra-architecture.drawio) (open with [draw.io](https://app.diagrams.net/))
 
-```
-+-------------------------------------------------------------+
-|                     GitHub Actions (CI)                      |
-|  lint -> test -> build -> push to ECR                        |
-+---------------------------+---------------------------------+
-                            | docker push
-                            v
-+-------------------------------------------------------------+
-|                        AWS ECR                               |
-|  hello-world repository                                      |
-+---------------------------+---------------------------------+
-                            | pull image
-                            v
-+-------------------------------------------------------------+
-|                    AWS ECS Fargate                           |
-|  +-------------------------------------------------------+  |
-|  |  VPC (10.0.0.0/16)                                    |  |
-|  |  +--------------------------------------------------+ |  |
-|  |  |  Public Subnet (10.0.1.0/24)                     | |  |
-|  |  |  +--------------------------------------------+  | |  |
-|  |  |  |  Fargate Task (public IP)                  |  | |  |
-|  |  |  |  hello-world container :49000              |  | |  |
-|  |  |  +--------------------------------------------+  | |  |
-|  |  +--------------------------------------------------+ |  |
-|  +-------------------------------------------------------+  |
-+-------------------------------------------------------------+
-```
-
 ## Overview
 
 The v4.x infrastructure runs the hello-world application on AWS ECS Fargate with images stored in Amazon ECR. This serverless container deployment eliminates EC2 instance management while providing automatic scaling and high availability capabilities.
