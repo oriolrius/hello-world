@@ -1,3 +1,17 @@
+## v5.4.0 (2026-02-02)
+
+### Feat
+
+- **ci**: add Docker build and Ansible deploy to workflow
+
+### Fix
+
+- correct version number to 5.3.2
+
+### Refactor
+
+- **deploy**: switch from uv to Docker deployment
+
 ## v4.1.0 (2026-01-19)
 
 ## v4.0.4 (2026-01-19)
