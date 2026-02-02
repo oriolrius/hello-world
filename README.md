@@ -2,7 +2,7 @@
 
 A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
 
-## What This Version Demonstrates (v4.x)
+## What This Version Demonstrates (v4.x-ecr-ecs-fargate)
 
 This version introduces **Containerization** with Docker and **Serverless Container Orchestration** with AWS ECS Fargate:
 

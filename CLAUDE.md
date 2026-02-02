@@ -4,7 +4,7 @@
 
 **hello-world** is an educational DevOps demonstration project showcasing production-grade deployment practices. The application is a minimal HTTP server returning "hello-world" — the focus is on infrastructure, CI/CD, and deployment patterns rather than application logic.
 
-**Current Version**: v4.x (ECR + ECS Fargate)
+**Current Version**: v4.x-ecr-ecs-fargate
 
 ## Tech Stack
 

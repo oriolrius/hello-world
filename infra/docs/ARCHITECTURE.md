@@ -1,4 +1,4 @@
-# AWS Infrastructure Architecture (v4.x)
+# AWS Infrastructure Architecture (v4.x-ecr-ecs-fargate)
 
 ## Architecture Diagram
 
@@ -8,7 +8,7 @@ Editable source: [infra-architecture.drawio](infra-architecture.drawio) (open wi
 
 ## Overview
 
-The v4.x infrastructure runs the hello-world application on AWS ECS Fargate with images stored in Amazon ECR. This serverless container deployment eliminates EC2 instance management while providing automatic scaling and high availability capabilities.
+The v4.x-ecr-ecs-fargate infrastructure runs the hello-world application on AWS ECS Fargate with images stored in Amazon ECR. This serverless container deployment eliminates EC2 instance management while providing automatic scaling and high availability capabilities.
 
 ## Resources Created
 
