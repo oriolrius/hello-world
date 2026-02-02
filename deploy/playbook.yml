@@ -1,46 +1,75 @@
 ---
-- name: Deploy hello-world
+- name: Deploy hello-world with Docker
   hosts: all
   become: true
   vars:
-    app_port: 49000
-    app_bind: "0.0.0.0"
+    app_dir: /opt/hello-world
+    image_tag: v5
 
   tasks:
     - name: Install required packages
       apt:
         name:
+          - ca-certificates
           - curl
         state: present
         update_cache: true
 
-    - name: Install uv
-      shell: curl -LsSf https://astral.sh/uv/install.sh | sh
-      args:
-        creates: /root/.local/bin/uv
+    - name: Create Docker keyring directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
 
-    - name: Install hello-world with uv
-      shell: /root/.local/bin/uv tool install hello-world --from git+https://github.com/oriolrius/hello-world --force
-      environment:
-        PATH: "/root/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+    - name: Download Docker GPG key
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
 
-    - name: Create systemd service
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch={{ ansible_architecture | replace('x86_64', 'amd64') }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+        filename: docker
+
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy docker-compose.yml
       template:
-        src: hello-world.service.j2
-        dest: /etc/systemd/system/hello-world.service
+        src: docker-compose.yml.j2
+        dest: "{{ app_dir }}/docker-compose.yml"
         mode: '0644'
       notify: Restart hello-world
 
-    - name: Enable and start hello-world service
-      systemd:
-        name: hello-world
-        enabled: true
-        state: started
-        daemon_reload: true
+    - name: Pull and start hello-world container
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
+        state: present
+        pull: always
 
   handlers:
     - name: Restart hello-world
-      systemd:
-        name: hello-world
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
         state: restarted
-        daemon_reload: true

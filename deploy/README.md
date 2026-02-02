@@ -1,76 +1,63 @@
 # Ansible Deployment - v5.0.x
 
-This folder contains Ansible configuration for deploying the hello-world application to EC2 instances.
+Ansible playbook for deploying hello-world to EC2 instances using Docker Compose.
 
 ## Quick Start
 
-### Prerequisites
+```bash
+# Install dependencies
+uv sync --dev
+uv run ansible-galaxy collection install -r deploy/requirements.yml
 
-- EC2 instance running Ubuntu 24.04 (provisioned via CloudFormation)
-- SSH key pair for EC2 access
-- Ansible installed (`uv sync --dev` installs it)
+# Create inventory (edit with your EC2 IP)
+cp deploy/inventory.ini.example deploy/inventory.ini
 
-### Deploy
+# Deploy
+cd deploy
+uv run ansible-playbook -i inventory.ini playbook.yml
+```
 
-1. Create inventory file:
-   ```bash
-   cp inventory.ini.example inventory.ini
-   # Edit inventory.ini with your EC2 IP
-   ```
+## Prerequisites
 
-2. Run the playbook:
-   ```bash
-   cd deploy
-   uv run ansible-playbook -i inventory.ini playbook.yml
-   ```
-
-3. Verify:
-   ```bash
-   curl http://<ec2-ip>:49000/
-   ```
+- EC2 instance running Ubuntu 24.04
+- SSH access to the instance
+- Ansible installed (`uv sync --dev`)
 
 ## What Gets Installed
 
-| Component | Description |
-|-----------|-------------|
-| curl | Required for downloading uv |
-| uv | Python package manager |
-| hello-world | Application (installed as uv tool) |
-| systemd service | Auto-start on boot |
+1. Docker Engine
+2. Docker Compose plugin
+3. hello-world container from ghcr.io
 
 ## Files
 
 | File | Description |
 |------|-------------|
 | `playbook.yml` | Main Ansible playbook |
-| `ansible.cfg` | Ansible configuration |
-| `hello-world.service.j2` | Systemd service template |
 | `inventory.ini.example` | Example inventory file |
-| `docs/ARCHITECTURE.md` | Detailed architecture documentation |
-| `docs/deploy-architecture.png` | Architecture diagram |
-| `docs/deploy-architecture.dot` | Graphviz source for diagram |
-| `docs/deploy-architecture.drawio` | Editable diagram (draw.io format) |
+| `ansible.cfg` | Ansible configuration |
+| `requirements.yml` | Ansible Galaxy requirements |
+| `docker-compose.yml.j2` | Docker Compose template |
+| `docs/` | Architecture documentation |
 
 ## Variables
 
-Configure in playbook.yml:
-
 | Variable | Default | Description |
 |----------|---------|-------------|
-| app_port | 49000 | Application port |
-| app_bind | 0.0.0.0 | Bind address |
+| `app_dir` | /opt/hello-world | Install directory |
+| `image_tag` | v5 | Docker image tag |
 
 ## Service Management
 
 ```bash
 # Check status
-ssh ubuntu@<ec2-ip> "sudo systemctl status hello-world"
+ssh ubuntu@<IP> "sudo docker compose -f /opt/hello-world/docker-compose.yml ps"
 
 # View logs
-ssh ubuntu@<ec2-ip> "sudo journalctl -u hello-world -f"
+ssh ubuntu@<IP> "sudo docker compose -f /opt/hello-world/docker-compose.yml logs -f"
 
 # Restart
-ssh ubuntu@<ec2-ip> "sudo systemctl restart hello-world"
+ssh ubuntu@<IP> "sudo docker compose -f /opt/hello-world/docker-compose.yml restart"
 ```
 
 ## Architecture

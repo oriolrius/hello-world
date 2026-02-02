@@ -1,0 +1,12 @@
+services:
+  hello-world:
+    image: ghcr.io/oriolrius/hello-world:v5
+    ports:
+      - "49000:49000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:49000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s

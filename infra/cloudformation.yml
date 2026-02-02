@@ -95,7 +95,7 @@ Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t3.micro
+      InstanceType: t3a.micro
       ImageId: !FindInMap [RegionAMI, !Ref 'AWS::Region', AMI]
       KeyName: !If [HasKeyName, !Ref KeyName, !Ref 'AWS::NoValue']
       SubnetId: !Ref PublicSubnet
