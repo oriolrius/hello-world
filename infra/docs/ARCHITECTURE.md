@@ -2,19 +2,45 @@
 
 ## Architecture Diagram
 
-![AWS Infrastructure](infra-architecture.png)
-
-## Connection Color Legend
-
-| Color | Meaning |
-|-------|---------|
-| Blue (#4299E1) | Network traffic flow |
+```
++-------------------------------------------------------------+
+|                     GitHub Actions (CI)                      |
+|  lint -> test -> build -> push to ECR                        |
++---------------------------+---------------------------------+
+                            | docker push
+                            v
++-------------------------------------------------------------+
+|                        AWS ECR                               |
+|  hello-world repository                                      |
++---------------------------+---------------------------------+
+                            | pull image
+                            v
++-------------------------------------------------------------+
+|                    AWS ECS Fargate                           |
+|  +-------------------------------------------------------+  |
+|  |  VPC (10.0.0.0/16)                                    |  |
+|  |  +--------------------------------------------------+ |  |
+|  |  |  Public Subnet (10.0.1.0/24)                     | |  |
+|  |  |  +--------------------------------------------+  | |  |
+|  |  |  |  Fargate Task (public IP)                  |  | |  |
+|  |  |  |  hello-world container :49000              |  | |  |
+|  |  |  +--------------------------------------------+  | |  |
+|  |  +--------------------------------------------------+ |  |
+|  +-------------------------------------------------------+  |
++-------------------------------------------------------------+
+```
 
 ## Overview
 
-The v4.x infrastructure creates a minimal AWS environment for running the hello-world application on EC2. The application is bootstrapped via CloudFormation UserData, which installs Docker and deploys the container automatically on instance launch.
+The v4.x infrastructure runs the hello-world application on AWS ECS Fargate with images stored in Amazon ECR. This serverless container deployment eliminates EC2 instance management while providing automatic scaling and high availability capabilities.
 
 ## Resources Created
+
+### Container Registry
+
+| Resource | Type | Configuration |
+|----------|------|---------------|
+| ECR Repository | AWS::ECR::Repository | hello-world, scan on push, lifecycle policy (keep 10 images) |
 
 ### Networking
 
@@ -23,31 +49,103 @@ The v4.x infrastructure creates a minimal AWS environment for running the hello-
 | VPC | AWS::EC2::VPC | CIDR: 10.0.0.0/16 |
 | Internet Gateway | AWS::EC2::InternetGateway | Attached to VPC |
 | Public Subnet | AWS::EC2::Subnet | CIDR: 10.0.1.0/24, Auto-assign public IP |
-| Route Table | AWS::EC2::RouteTable | 0.0.0.0/0 → Internet Gateway |
+| Route Table | AWS::EC2::RouteTable | 0.0.0.0/0 -> Internet Gateway |
+| Security Group | AWS::EC2::SecurityGroup | Inbound: 49000 (app) |
 
-### Compute
+### Compute (ECS Fargate)
 
 | Resource | Type | Configuration |
 |----------|------|---------------|
-| EC2 Instance | AWS::EC2::Instance | t3a.micro, Ubuntu 24.04 LTS |
-| Security Group | AWS::EC2::SecurityGroup | Inbound: 22 (SSH), 49000 (app) |
+| ECS Cluster | AWS::ECS::Cluster | hello-world |
+| Task Definition | AWS::ECS::TaskDefinition | 0.25 vCPU, 512 MB, Fargate |
+| ECS Service | AWS::ECS::Service | 1 desired task, public IP enabled |
+| Execution Role | AWS::IAM::Role | ECR pull, CloudWatch logs |
+
+### Logging
+
+| Resource | Type | Configuration |
+|----------|------|---------------|
+| Log Group | AWS::Logs::LogGroup | /ecs/hello-world, 7 days retention |
 
 ## CloudFormation Parameters
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `KeyName` | EC2 Key Pair for SSH access | (none) |
-| `AllowedIP` | CIDR for SSH access | 0.0.0.0/0 |
+| `ImageTag` | Docker image tag to deploy | latest |
+| `AllowedIP` | CIDR for application access | 0.0.0.0/0 |
 
 ## Stack Outputs
 
 | Output | Description |
 |--------|-------------|
-| `PublicIP` | EC2 instance public IP |
-| `PublicDNS` | EC2 instance public DNS name |
-| `ServiceURL` | Full URL to access the service |
+| `ECRRepositoryUri` | ECR repository URI for pushing images |
+| `ECSClusterName` | ECS cluster name |
+| `ECSServiceName` | ECS service name |
+| `VPCId` | VPC ID |
+| `SubnetId` | Public subnet ID |
+| `SecurityGroupId` | Security group ID |
 
 ## Deployment
+
+### Prerequisites
+
+- AWS CLI configured with appropriate credentials
+- Docker installed and running
+
+### Version Tagging
+
+This branch uses the suffix `-ecr-ecs-fargate` for all version tags:
+- Git tag: `v4.4.0-ecr-ecs-fargate`
+- Docker image tag: `v4.4.0-ecr-ecs-fargate`
+
+### Initial Deployment
+
+1. Deploy the CloudFormation stack:
+
+```bash
+make deploy
+```
+
+2. Build and push the Docker image:
+
+```bash
+make ecr-push TAG=v4.4.0-ecr-ecs-fargate
+```
+
+3. Check service status:
+
+```bash
+make status
+```
+
+### Update Deployment
+
+To deploy a new image version:
+
+```bash
+make ecr-push TAG=v4.5.0-ecr-ecs-fargate
+make redeploy
+```
+
+### Force Redeployment (Same Image)
+
+```bash
+make redeploy
+```
+
+### View Logs
+
+```bash
+make logs
+```
+
+### Delete Stack
+
+```bash
+make delete
+```
+
+## Manual CLI Commands
 
 ### Deploy Stack
 
@@ -55,7 +153,8 @@ The v4.x infrastructure creates a minimal AWS environment for running the hello-
 aws cloudformation deploy \
   --template-file infra/cloudformation.yml \
   --stack-name hello-world \
-  --parameter-overrides KeyName=my-key-pair \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides ImageTag=v4.4.0-ecr-ecs-fargate \
   --region eu-west-1
 ```
 
@@ -66,6 +165,14 @@ aws cloudformation describe-stacks \
   --stack-name hello-world \
   --query 'Stacks[0].Outputs' \
   --output table
+```
+
+### Get Task Public IP
+
+```bash
+TASK_ARN=$(aws ecs list-tasks --cluster hello-world --service-name hello-world --query 'taskArns[0]' --output text)
+ENI_ID=$(aws ecs describe-tasks --cluster hello-world --tasks $TASK_ARN --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text)
+aws ec2 describe-network-interfaces --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].Association.PublicIp' --output text
 ```
 
 ### Delete Stack
@@ -79,29 +186,62 @@ aws cloudformation wait stack-delete-complete --stack-name hello-world
 
 | Resource | Estimated Monthly Cost |
 |----------|----------------------|
-| EC2 t3.micro | ~$8.50 (on-demand) |
-| Data transfer | Variable |
-| **Total** | ~$10/month |
-
-*Free tier eligible for first 12 months.*
+| Fargate (0.25 vCPU, 512MB, 24/7) | ~$10.00 |
+| ECR storage | ~$0.10/GB |
+| CloudWatch Logs | ~$0.50 |
+| **Total** | ~$11/month |
 
 ## Security Considerations
 
 | Aspect | Implementation |
 |--------|----------------|
-| SSH Access | Configurable via `AllowedIP` parameter |
-| Application Port | Open to 0.0.0.0/0 (public) |
-| Instance Metadata | Default (v1 + v2) |
-| Encryption | Not enabled (demo purposes) |
+| Application Port | Configurable via `AllowedIP` parameter |
+| Container Images | Scanned on push to ECR |
+| IAM | Minimal permissions (ECR pull, CloudWatch logs) |
+| Network | Public subnet with security group filtering |
+| Secrets | Use AWS Secrets Manager for sensitive data (not implemented) |
 
-## Diagram Source
+## CI/CD Pipeline
 
-The diagram is generated from `tools/generate_infra_diagram.py`:
+GitHub Actions workflow (`.github/workflows/release.yml`):
 
+1. **lint** - Code quality checks with ruff
+2. **test** - Run pytest
+3. **build** - Build Python package
+4. **release** - Create GitHub release
+5. **docker** - Build and push to ECR
+
+Deployment is manual via `make deploy` or `make redeploy`.
+
+## Troubleshooting
+
+### Task Not Starting
+
+Check CloudWatch logs:
 ```bash
-cd tools
-source .venv/bin/activate
-python generate_infra_diagram.py
+make logs
 ```
 
-Editable version: [infra-architecture.drawio](infra-architecture.drawio)
+Or via AWS Console: CloudWatch > Log Groups > /ecs/hello-world
+
+### No Public IP
+
+Ensure the task is in RUNNING state:
+```bash
+make status
+```
+
+### Image Pull Errors
+
+Verify the image exists in ECR:
+```bash
+aws ecr describe-images --repository-name hello-world --region eu-west-1
+```
+
+### Service Not Stabilizing
+
+Check service events:
+```bash
+aws ecs describe-services --cluster hello-world --services hello-world \
+  --query 'services[0].events[:5]' --output table
+```

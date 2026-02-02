@@ -1,23 +1,48 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Hello World web server on EC2
+Description: Hello World web server on ECS Fargate
 
 Parameters:
-  KeyName:
+  ImageTag:
     Type: String
-    Description: EC2 Key Pair name for SSH access
-    Default: ''
+    Description: Docker image tag to deploy
+    Default: 'latest'
 
   AllowedIP:
     Type: String
-    Description: IP CIDR allowed for SSH access
+    Description: IP CIDR allowed for application access
     Default: '0.0.0.0/0'
 
-Mappings:
-  RegionAMI:
-    eu-west-1:
-      AMI: ami-0e9085e60087ce171  # Ubuntu 24.04 LTS eu-west-1
-
 Resources:
+  # ECR Repository
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: hello-world
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 10 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 10
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+      Tags:
+        - Key: Name
+          Value: hello-world
+
+  # VPC
   VPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -74,78 +99,155 @@ Resources:
       SubnetId: !Ref PublicSubnet
       RouteTableId: !Ref RouteTable
 
+  # Security Group
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Hello World security group
+      GroupDescription: Hello World ECS security group
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 49000
           ToPort: 49000
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
           CidrIp: !Ref AllowedIP
       Tags:
         - Key: Name
           Value: hello-world-sg
 
-  EC2Instance:
-    Type: AWS::EC2::Instance
+  # CloudWatch Log Group
+  LogGroup:
+    Type: AWS::Logs::LogGroup
     Properties:
-      InstanceType: t3a.micro
-      ImageId: !FindInMap [RegionAMI, !Ref 'AWS::Region', AMI]
-      KeyName: !If [HasKeyName, !Ref KeyName, !Ref 'AWS::NoValue']
-      SubnetId: !Ref PublicSubnet
-      SecurityGroupIds:
-        - !Ref SecurityGroup
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          set -e
+      LogGroupName: /ecs/hello-world
+      RetentionInDays: 7
 
-          # Update system
-          apt-get update
-          apt-get upgrade -y
-
-          # Install Docker
-          apt-get install -y ca-certificates curl
-          install -m 0755 -d /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-          chmod a+r /etc/apt/keyrings/docker.asc
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-          apt-get update
-          apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
-          # Start Docker
-          systemctl enable docker
-          systemctl start docker
-
-          # Create app directory and download docker-compose.yml
-          mkdir -p /opt/hello-world
-          cd /opt/hello-world
-          curl -fsSL https://raw.githubusercontent.com/oriolrius/hello-world/refs/heads/v4.x/docker/docker-compose.yml -o docker-compose.yml
-
-          # Run with docker compose
-          docker compose up -d
+  # ECS Cluster
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: hello-world
+      ClusterSettings:
+        - Name: containerInsights
+          Value: disabled
       Tags:
         - Key: Name
           Value: hello-world
 
-Conditions:
-  HasKeyName: !Not [!Equals [!Ref KeyName, '']]
+  # IAM Role for ECS Task Execution
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: hello-world-ecs-execution-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: ECRPullPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt LogGroup.Arn
+
+  # ECS Task Definition
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: hello-world
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: '256'
+      Memory: '512'
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: hello-world
+          Image: !Sub '${ECRRepository.RepositoryUri}:${ImageTag}'
+          Essential: true
+          PortMappings:
+            - ContainerPort: 49000
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/hello-world
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - curl -f http://localhost:49000/ || exit 1
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 10
+      Tags:
+        - Key: Name
+          Value: hello-world
+
+  # ECS Service
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - Route
+    Properties:
+      ServiceName: hello-world
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref ECSTaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - !Ref PublicSubnet
+          SecurityGroups:
+            - !Ref SecurityGroup
+          AssignPublicIp: ENABLED
+      Tags:
+        - Key: Name
+          Value: hello-world
 
 Outputs:
-  PublicIP:
-    Description: Public IP of EC2 instance
-    Value: !GetAtt EC2Instance.PublicIp
+  ECRRepositoryUri:
+    Description: ECR Repository URI for pushing images
+    Value: !GetAtt ECRRepository.RepositoryUri
 
-  PublicDNS:
-    Description: Public DNS of EC2 instance
-    Value: !GetAtt EC2Instance.PublicDnsName
+  ECSClusterName:
+    Description: ECS Cluster name
+    Value: !Ref ECSCluster
 
-  ServiceURL:
-    Description: Hello World service URL
-    Value: !Sub 'http://${EC2Instance.PublicIp}:49000'
+  ECSServiceName:
+    Description: ECS Service name
+    Value: !GetAtt ECSService.Name
+
+  VPCId:
+    Description: VPC ID
+    Value: !Ref VPC
+
+  SubnetId:
+    Description: Public Subnet ID
+    Value: !Ref PublicSubnet
+
+  SecurityGroupId:
+    Description: Security Group ID
+    Value: !Ref SecurityGroup
+
+  ServiceNote:
+    Description: How to get the service URL
+    Value: !Sub 'Run: aws ecs describe-tasks --cluster ${ECSCluster} --tasks $(aws ecs list-tasks --cluster ${ECSCluster} --service-name ${ECSService.Name} --query taskArns[0] --output text) --query tasks[0].attachments[0].details'

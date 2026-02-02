@@ -1,3 +1,7 @@
+# Local development docker-compose
+# Uses GHCR image for convenience. Production uses ECR + ECS Fargate.
+# See infra/docs/ARCHITECTURE.md for production deployment.
+
 services:
   hello-world:
     image: ghcr.io/oriolrius/hello-world:v4
