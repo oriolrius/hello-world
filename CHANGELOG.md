@@ -1,3 +1,9 @@
+## v5.4.3 (2026-02-02)
+
+### Fix
+
+- **ci**: handle CloudFormation stack in transitional state
+
 ## v5.4.2 (2026-02-02)
 
 ### Fix
