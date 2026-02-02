@@ -17,6 +17,56 @@ This document describes the Ansible deployment architecture for the hello-world 
 
 The deployment uses Ansible to configure EC2 instances provisioned by CloudFormation. The playbook installs Docker and deploys the hello-world application as a container using Docker Compose.
 
+## Automation & Triggers
+
+![Trigger Flow](trigger-flow.png)
+
+### What Triggers the Deployment?
+
+There are **two GitHub workflows** that can trigger deployment:
+
+| Workflow | Trigger | Description |
+|----------|---------|-------------|
+| `release.yml` | `git push --tags v*` | Push a version tag (e.g., `git tag v5.4.0 && git push --tags`) |
+| `release.yml` | Manual (workflow_dispatch) | Click "Run workflow" in GitHub Actions UI |
+| `deploy.yml` | GitHub Release published | Create a release via GitHub UI |
+| `deploy.yml` | Manual (workflow_dispatch) | Click "Run workflow" in GitHub Actions UI |
+
+### How Does Each Component Get Called?
+
+The entire deployment is **fully automated** within the GitHub Actions workflow. Here's the chain of calls:
+
+| Step | What Happens | Called By | How |
+|------|--------------|-----------|-----|
+| 1 | GitHub Actions starts | Trigger event | GitHub webhook |
+| 2 | CloudFormation deploys infra | GitHub Actions | `aws cloudformation deploy` (AWS CLI) |
+| 3 | EC2 instance created/updated | CloudFormation | AWS API |
+| 4 | Wait for EC2 to be ready | GitHub Actions | `aws ec2 wait instance-status-ok` |
+| 5 | Get EC2 public IP | GitHub Actions | `aws cloudformation describe-stacks` |
+| 6 | Create Ansible inventory | GitHub Actions | Shell script writes `inventory.ini` |
+| 7 | Run Ansible playbook | GitHub Actions | `ansible-playbook -i inventory.ini playbook.yml` |
+| 8 | Ansible connects to EC2 | Ansible | SSH with ephemeral key pair |
+| 9 | Docker installed & container deployed | Ansible | Playbook tasks |
+
+### Key Points
+
+- **No manual intervention**: Once triggered, the entire deployment runs automatically
+- **CloudFormation is idempotent**: Running multiple times only updates what changed
+- **Ansible is idempotent**: Running multiple times is safe, only applies necessary changes
+- **Ephemeral SSH keys**: `release.yml` creates a new key pair for each deployment
+- **GitHub Actions is the orchestrator**: It calls AWS CLI, waits for resources, then runs Ansible
+
+### Required GitHub Secrets
+
+For automated deployment to work, these secrets must be configured in the repository:
+
+| Secret | Description |
+|--------|-------------|
+| `AWS_ACCESS_KEY_ID` | AWS access key with CloudFormation/EC2 permissions |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret access key |
+| `AWS_SESSION_TOKEN` | Session token (required for SSO/temporary credentials) |
+| `EC2_SSH_KEY` | (Optional) Stored SSH private key for `deploy.yml` |
+
 ## Deployment Flow
 
 ![Deployment Flow](deploy-flow.png)
@@ -213,15 +263,39 @@ ssh ubuntu@<ec2-ip> "sudo docker compose -f /opt/hello-world/docker-compose.yml 
 ssh ubuntu@<ec2-ip> "sudo systemctl status docker"
 ```
 
-## Diagram Source
+## Diagram Sources
 
-The architecture diagram is generated using the [diagrams](https://diagrams.mingrammer.com/) library.
+### Architecture Diagram (deploy-architecture.png)
 
-To regenerate the diagram:
+Generated using the [diagrams](https://diagrams.mingrammer.com/) library:
 
 ```bash
 cd tools
 uv run python generate_deploy_diagram.py
 ```
 
-The editable `.drawio` file is also available for manual adjustments.
+### Flow Diagrams (deploy-flow.png, trigger-flow.png)
+
+Generated using [GraphViz](https://graphviz.org/):
+
+```bash
+cd deploy/docs
+dot -Tpng deploy-flow.dot -o deploy-flow.png
+dot -Tpng trigger-flow.dot -o trigger-flow.png
+```
+
+To convert DOT to editable draw.io format:
+
+```bash
+graphviz2drawio deploy-flow.dot -o deploy-flow.drawio
+graphviz2drawio trigger-flow.dot -o trigger-flow.drawio
+```
+
+### Editable Files
+
+| File | Format | Description |
+|------|--------|-------------|
+| `deploy-architecture.drawio` | draw.io | Main architecture diagram |
+| `deploy-flow.drawio` | draw.io | Deployment flow diagram |
+| `trigger-flow.drawio` | draw.io | Automation trigger flow |
+| `*.dot` | GraphViz DOT | Source files for flow diagrams |

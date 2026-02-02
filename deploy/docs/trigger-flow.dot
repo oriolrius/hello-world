@@ -1,0 +1,104 @@
+digraph TriggerFlow {
+    // Graph settings
+    rankdir=LR;
+    splines=polyline;
+    nodesep=0.4;
+    ranksep=0.8;
+    bgcolor="transparent";
+
+    // Default node style
+    node [
+        shape=box
+        style="filled,rounded"
+        fontname="Sans-Serif"
+        fontsize=10
+        margin="0.2,0.12"
+    ];
+
+    edge [
+        fontname="Sans-Serif"
+        fontsize=9
+        color="#7B8894"
+    ];
+
+    // Triggers
+    trigger [
+        label="Trigger"
+        shape=diamond
+        fillcolor="#FFF3CD"
+        color="#856404"
+    ];
+
+    // GitHub Actions
+    github [
+        label="GitHub Actions\nRunner"
+        fillcolor="#0066CC"
+        fontcolor="white"
+    ];
+
+    // AWS CLI
+    aws_cli [
+        label="AWS CLI\n(CloudFormation)"
+        fillcolor="#FF9900"
+        fontcolor="white"
+    ];
+
+    // EC2
+    ec2 [
+        label="EC2 Instance\n(Ubuntu 24.04)"
+        fillcolor="#FF9900"
+        fontcolor="white"
+    ];
+
+    // Ansible
+    ansible [
+        label="Ansible\n(via SSH)"
+        fillcolor="#E85D04"
+        fontcolor="white"
+    ];
+
+    // Docker
+    docker [
+        label="Docker\nContainer"
+        fillcolor="#2496ED"
+        fontcolor="white"
+    ];
+
+    // Connections
+    trigger -> github [
+        label="  1. starts"
+        color="#856404"
+        penwidth=2
+    ];
+
+    github -> aws_cli [
+        label="  2. calls"
+        color="#0066CC"
+        penwidth=2
+    ];
+
+    aws_cli -> ec2 [
+        label="  3. creates"
+        color="#FF9900"
+        penwidth=2
+    ];
+
+    github -> ansible [
+        label="  4. runs"
+        color="#0066CC"
+        penwidth=2
+    ];
+
+    ansible -> ec2 [
+        label="  5. connects (SSH)"
+        color="#E85D04"
+        penwidth=2
+        style="dashed"
+    ];
+
+    ansible -> docker [
+        label="  6. deploys"
+        color="#E85D04"
+        penwidth=2
+    ];
+}
