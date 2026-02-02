@@ -86,22 +86,22 @@ digraph "AWS Infrastructure - v5.0.x" {
 						shape=box,
 						style=rounded
 					];
-					"5ce0ec37a59d4ebcb6102f098824b1bb"	[height=2.3056,
+					"9da927a2c9574b20b4aea57d82efb2f7"	[height=2.3056,
 						image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/compute/ec2.png",
 						label="hello-world
-(t3.micro)",
+(t3a.micro)",
 						pos="859.5,146",
 						shape=none,
 						width=1.4028];
 				}
-				da7d8f6fcbb14496b9f2efec68808523	[height=2.3056,
+				afb08f34413546268a3590e77263afb2	[height=2.3056,
 					image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/generic/network/firewall.png",
 					label="Security
 Group",
 					pos="650.5,146",
 					shape=none,
 					width=1.4028];
-				da7d8f6fcbb14496b9f2efec68808523 -> "5ce0ec37a59d4ebcb6102f098824b1bb"	[color=green,
+				afb08f34413546268a3590e77263afb2 -> "9da927a2c9574b20b4aea57d82efb2f7"	[color=green,
 					dir=forward,
 					fontcolor="#2D3436",
 					fontname="Sans-Serif",
@@ -110,42 +110,42 @@ Group",
 					lp="755,153",
 					pos="e,808.65,146 701.09,146 701.09,146 798.65,146 798.65,146"];
 			}
-			"0540582afe0a401eb716e6b4ebfb899c"	[height=2.3056,
+			b2f5c8fa8fdf4f4ca7c21f8400854995	[height=2.3056,
 				image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/network/route-table.png",
 				label="Route
 Table",
 				pos="476.5,146",
 				shape=none,
 				width=1.4028];
-			"0540582afe0a401eb716e6b4ebfb899c" -> da7d8f6fcbb14496b9f2efec68808523	[color=blue,
+			b2f5c8fa8fdf4f4ca7c21f8400854995 -> afb08f34413546268a3590e77263afb2	[color=blue,
 				dir=forward,
 				fontcolor="#2D3436",
 				fontname="Sans-Serif",
 				fontsize=13,
 				pos="e,599.94,146 527.3,146 527.3,146 589.94,146 589.94,146"];
 		}
-		"563807d3e6dd476682a0087d33109ca5"	[height=2.3056,
+		a9ac4c9e41c14705839546d0780d9613	[height=2.3056,
 			image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/network/internet-gateway.png",
 			label="Internet
 Gateway",
 			pos="302.5,146",
 			shape=none,
 			width=1.4028];
-		"563807d3e6dd476682a0087d33109ca5" -> "0540582afe0a401eb716e6b4ebfb899c"	[color=blue,
+		a9ac4c9e41c14705839546d0780d9613 -> b2f5c8fa8fdf4f4ca7c21f8400854995	[color=blue,
 			dir=forward,
 			fontcolor="#2D3436",
 			fontname="Sans-Serif",
 			fontsize=13,
 			pos="e,425.94,146 353.3,146 353.3,146 415.94,146 415.94,146"];
 	}
-	a6b295a900cb4f1fb4962f104035fe5f	[height=2.3056,
+	"1da3fd8060404dbbb3d725a96a075346"	[height=2.3056,
 		image="/home/oriol/esade/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/client/users.png",
 		label="Internet
 Users",
 		pos="50.5,145",
 		shape=none,
 		width=1.4028];
-	a6b295a900cb4f1fb4962f104035fe5f -> "563807d3e6dd476682a0087d33109ca5"	[color=blue,
+	"1da3fd8060404dbbb3d725a96a075346" -> a9ac4c9e41c14705839546d0780d9613	[color=blue,
 		dir=forward,
 		fontcolor="#2D3436",
 		fontname="Sans-Serif",
@@ -153,7 +153,7 @@ Users",
 		label="HTTP:49000",
 		lp="176.5,191",
 		pos="e,251.89,118 101.19,118 101.19,118 241.89,118 241.89,118"];
-	a6b295a900cb4f1fb4962f104035fe5f -> "563807d3e6dd476682a0087d33109ca5"	[color=orange,
+	"1da3fd8060404dbbb3d725a96a075346" -> a9ac4c9e41c14705839546d0780d9613	[color=orange,
 		dir=forward,
 		fontcolor="#2D3436",
 		fontname="Sans-Serif",

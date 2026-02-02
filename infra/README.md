@@ -43,7 +43,7 @@ aws cloudformation delete-stack --stack-name hello-world
 | Component | Description |
 |-----------|-------------|
 | VPC | 10.0.0.0/16 with public subnet |
-| EC2 | t3.micro Ubuntu 24.04 LTS |
+| EC2 | t3a.micro Ubuntu 24.04 LTS |
 | Security | Ports 22 (SSH) and 49000 (HTTP) |
 
 ## Parameters

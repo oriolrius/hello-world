@@ -45,7 +45,7 @@ def main():
                     sg = Firewall("Security\nGroup")
 
                     with Cluster("EC2 Instance"):
-                        ec2 = EC2("hello-world\n(t3.micro)")
+                        ec2 = EC2("hello-world\n(t3a.micro)")
 
         # Traffic flow
         users >> Edge(color="blue", label="HTTP:49000") >> igw

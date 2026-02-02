@@ -1,6 +1,6 @@
 # AWS Infrastructure Architecture - v5.0.x
 
-This document describes the AWS infrastructure architecture for the hello-world application version 4.0.x.
+This document describes the AWS infrastructure architecture for the hello-world application version 5.0.x.
 
 ## Architecture Diagram
 
@@ -43,7 +43,7 @@ The infrastructure is deployed via AWS CloudFormation and consists of:
 | Resource | Type | Description |
 |----------|------|-------------|
 | SecurityGroup | `AWS::EC2::SecurityGroup` | Controls inbound/outbound traffic |
-| EC2Instance | `AWS::EC2::Instance` | Ubuntu 24.04 LTS (t3.micro) |
+| EC2Instance | `AWS::EC2::Instance` | Ubuntu 24.04 LTS (t3a.micro) |
 
 ## Security Group Rules
 
@@ -77,17 +77,18 @@ All outbound traffic is allowed (default).
 
 The application is deployed using Ansible after CloudFormation completes:
 
-1. **uv** is installed on the EC2 instance
-2. **hello-world** is installed as a uv tool from GitHub
-3. A **systemd service** is created and started
+1. **Docker** is installed on the EC2 instance
+2. **hello-world** container image is pulled from ghcr.io
+3. The application runs via **Docker Compose**
 
-### Systemd Service
+### Docker Container
 
-The hello-world application runs as a systemd service:
+The hello-world application runs as a Docker container:
 
-- **Service name**: `hello-world`
-- **Bind address**: `0.0.0.0:49000`
-- **Auto-start**: Enabled on boot
+- **Image**: `ghcr.io/oriolrius/hello-world:v5`
+- **Port**: `49000:49000`
+- **Restart policy**: `unless-stopped`
+- **Health check**: HTTP GET on port 49000
 
 ## Deployment Commands
 
@@ -124,7 +125,7 @@ aws cloudformation delete-stack --stack-name hello-world
 
 | Resource    | Type     | Estimated Monthly Cost |
 |-------------|----------|------------------------|
-| EC2         | t3.micro | ~$8 (on-demand)        |
+| EC2         | t3a.micro | ~$7 (on-demand)       |
 | VPC/Network | -        | Free (within limits)   |
 | Data Transfer | -      | Variable               |
 
@@ -145,8 +146,7 @@ To regenerate the diagram:
 
 ```bash
 cd tools
-source .venv/bin/activate
-python generate_infra_diagram.py
+uv run python generate_infra_diagram.py
 ```
 
 The editable `.drawio` file is also available for manual adjustments.
