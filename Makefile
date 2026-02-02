@@ -8,7 +8,7 @@
 .PHONY: help deploy delete ecr-login ecr-push redeploy status logs
 
 # Configuration
-STACK_NAME ?= hello-world
+STACK_NAME ?= hello-world-ecr-ecs-fargate
 AWS_REGION ?= eu-west-1
 TAG ?= latest-ecr-ecs-fargate
 VERSION_SUFFIX := -ecr-ecs-fargate
@@ -144,4 +144,4 @@ status:
 # Tail CloudWatch logs
 logs:
 	@echo "Tailing logs (Ctrl+C to stop)..."
-	aws logs tail /ecs/hello-world --region $(AWS_REGION) --follow
+	aws logs tail /ecs/hello-world-ecr-ecs-fargate --region $(AWS_REGION) --follow

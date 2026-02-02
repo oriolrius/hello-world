@@ -65,7 +65,7 @@ The v4.x infrastructure runs the hello-world application on AWS ECS Fargate with
 
 | Resource | Type | Configuration |
 |----------|------|---------------|
-| Log Group | AWS::Logs::LogGroup | /ecs/hello-world, 7 days retention |
+| Log Group | AWS::Logs::LogGroup | /ecs/hello-world-ecr-ecs-fargate, 7 days retention |
 
 ## CloudFormation Parameters
 
@@ -152,7 +152,7 @@ make delete
 ```bash
 aws cloudformation deploy \
   --template-file infra/cloudformation.yml \
-  --stack-name hello-world \
+  --stack-name hello-world-ecr-ecs-fargate \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameter-overrides ImageTag=v4.4.0-ecr-ecs-fargate \
   --region eu-west-1
@@ -162,7 +162,7 @@ aws cloudformation deploy \
 
 ```bash
 aws cloudformation describe-stacks \
-  --stack-name hello-world \
+  --stack-name hello-world-ecr-ecs-fargate \
   --query 'Stacks[0].Outputs' \
   --output table
 ```
@@ -170,16 +170,16 @@ aws cloudformation describe-stacks \
 ### Get Task Public IP
 
 ```bash
-TASK_ARN=$(aws ecs list-tasks --cluster hello-world --service-name hello-world --query 'taskArns[0]' --output text)
-ENI_ID=$(aws ecs describe-tasks --cluster hello-world --tasks $TASK_ARN --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text)
+TASK_ARN=$(aws ecs list-tasks --cluster hello-world-ecr-ecs-fargate --service-name hello-world-ecr-ecs-fargate --query 'taskArns[0]' --output text)
+ENI_ID=$(aws ecs describe-tasks --cluster hello-world-ecr-ecs-fargate --tasks $TASK_ARN --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text)
 aws ec2 describe-network-interfaces --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].Association.PublicIp' --output text
 ```
 
 ### Delete Stack
 
 ```bash
-aws cloudformation delete-stack --stack-name hello-world
-aws cloudformation wait stack-delete-complete --stack-name hello-world
+aws cloudformation delete-stack --stack-name hello-world-ecr-ecs-fargate
+aws cloudformation wait stack-delete-complete --stack-name hello-world-ecr-ecs-fargate
 ```
 
 ## Cost Estimation
@@ -222,7 +222,7 @@ Check CloudWatch logs:
 make logs
 ```
 
-Or via AWS Console: CloudWatch > Log Groups > /ecs/hello-world
+Or via AWS Console: CloudWatch > Log Groups > /ecs/hello-world-ecr-ecs-fargate
 
 ### No Public IP
 
@@ -235,13 +235,13 @@ make status
 
 Verify the image exists in ECR:
 ```bash
-aws ecr describe-images --repository-name hello-world --region eu-west-1
+aws ecr describe-images --repository-name hello-world-ecr-ecs-fargate --region eu-west-1
 ```
 
 ### Service Not Stabilizing
 
 Check service events:
 ```bash
-aws ecs describe-services --cluster hello-world --services hello-world \
+aws ecs describe-services --cluster hello-world-ecr-ecs-fargate --services hello-world-ecr-ecs-fargate \
   --query 'services[0].events[:5]' --output table
 ```

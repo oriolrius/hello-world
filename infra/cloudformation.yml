@@ -17,7 +17,7 @@ Resources:
   ECRRepository:
     Type: AWS::ECR::Repository
     Properties:
-      RepositoryName: hello-world
+      RepositoryName: hello-world-ecr-ecs-fargate
       ImageScanningConfiguration:
         ScanOnPush: true
       LifecyclePolicy:
@@ -118,14 +118,14 @@ Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /ecs/hello-world
+      LogGroupName: /ecs/hello-world-ecr-ecs-fargate
       RetentionInDays: 7
 
   # ECS Cluster
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: hello-world
+      ClusterName: hello-world-ecr-ecs-fargate
       ClusterSettings:
         - Name: containerInsights
           Value: disabled
@@ -137,7 +137,7 @@ Resources:
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: hello-world-ecs-execution-role
+      RoleName: hello-world-ecr-ecs-fargate-execution-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -186,7 +186,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: /ecs/hello-world
+              awslogs-group: /ecs/hello-world-ecr-ecs-fargate
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
           HealthCheck:
@@ -207,7 +207,7 @@ Resources:
     DependsOn:
       - Route
     Properties:
-      ServiceName: hello-world
+      ServiceName: hello-world-ecr-ecs-fargate
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref ECSTaskDefinition
       DesiredCount: 1
