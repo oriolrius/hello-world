@@ -1,5 +1,8 @@
 FROM python:3.13-slim
 
+# Install curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 LABEL org.opencontainers.image.source=https://github.com/oriolrius/hello-world
 LABEL org.opencontainers.image.description="Simple hello-world web server"
 LABEL org.opencontainers.image.licenses=MIT
