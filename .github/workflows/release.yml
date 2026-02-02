@@ -9,7 +9,6 @@ on:
 env:
   AWS_REGION: eu-west-1
   STACK_NAME: hello-world
-  KEY_NAME: hello-world-deploy-key
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -90,6 +89,7 @@ jobs:
             type=semver,pattern=v{{version}}
             type=semver,pattern=v{{major}}.{{minor}}
             type=semver,pattern=v{{major}}
+            type=sha,format=short,enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Build and push Docker image
         id: push
@@ -112,11 +112,9 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, docker]
     steps:
       - uses: actions/checkout@v4
-
-      - uses: astral-sh/setup-uv@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -126,43 +124,11 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Delete existing stack if present
-        run: |
-          if aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} 2>/dev/null; then
-            echo "Deleting existing stack..."
-            aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}
-            echo "Waiting for stack deletion..."
-            aws cloudformation wait stack-delete-complete --stack-name ${{ env.STACK_NAME }}
-            echo "Stack deleted"
-          else
-            echo "No existing stack found"
-          fi
-
-      - name: Delete existing key pair if present
-        run: |
-          if aws ec2 describe-key-pairs --key-names ${{ env.KEY_NAME }} 2>/dev/null; then
-            echo "Deleting existing key pair..."
-            aws ec2 delete-key-pair --key-name ${{ env.KEY_NAME }}
-            echo "Key pair deleted"
-          else
-            echo "No existing key pair found"
-          fi
-
-      - name: Create new key pair
-        run: |
-          aws ec2 create-key-pair \
-            --key-name ${{ env.KEY_NAME }} \
-            --query 'KeyMaterial' \
-            --output text > /tmp/deploy-key.pem
-          chmod 600 /tmp/deploy-key.pem
-          echo "New key pair created"
-
       - name: Deploy CloudFormation stack
         run: |
           aws cloudformation deploy \
             --template-file infra/cloudformation.yml \
-            --stack-name ${{ env.STACK_NAME }} \
-            --parameter-overrides KeyName=${{ env.KEY_NAME }}
+            --stack-name ${{ env.STACK_NAME }}
 
       - name: Wait for EC2 instance
         run: |
@@ -182,27 +148,16 @@ jobs:
             --output text)
           echo "ec2_ip=$IP" >> $GITHUB_OUTPUT
 
-      - name: Create Ansible inventory
-        run: |
-          cat > deploy/inventory.ini << EOF
-          [hello-world]
-          ${{ steps.get-ip.outputs.ec2_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=/tmp/deploy-key.pem
-          EOF
-
-      - name: Install dependencies
-        run: uv sync --dev
-
-      - name: Install Ansible collections
-        run: uv run ansible-galaxy collection install -r deploy/requirements.yml
-
-      - name: Deploy with Ansible
-        run: |
-          cd deploy
-          uv run ansible-playbook -i inventory.ini playbook.yml
-
       - name: Verify deployment
         run: |
-          sleep 5
-          curl -s --fail http://${{ steps.get-ip.outputs.ec2_ip }}:49000/
-          echo ""
-          echo "Deployment successful: http://${{ steps.get-ip.outputs.ec2_ip }}:49000"
+          echo "Waiting for service to start..."
+          for i in {1..30}; do
+            if curl -s --fail http://${{ steps.get-ip.outputs.ec2_ip }}:49000/ > /dev/null 2>&1; then
+              echo "Deployment successful: http://${{ steps.get-ip.outputs.ec2_ip }}:49000"
+              exit 0
+            fi
+            echo "Attempt $i/30 - Service not ready yet..."
+            sleep 10
+          done
+          echo "Service failed to start"
+          exit 1
