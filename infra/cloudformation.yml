@@ -126,10 +126,10 @@ Resources:
           # Create app directory and download docker-compose.yml
           mkdir -p /opt/hello-world
           cd /opt/hello-world
-          curl -fsSL https://raw.githubusercontent.com/oriolrius/hello-world/main/docker/docker-compose.yml -o docker-compose.yml
+          curl -fsSL https://raw.githubusercontent.com/oriolrius/hello-world/refs/heads/v4.x/docker/docker-compose.yml -o docker-compose.yml
 
           # Run with docker compose
-          docker compose up -d
+                    docker compose up -d
       Tags:
         - Key: Name
           Value: hello-world
