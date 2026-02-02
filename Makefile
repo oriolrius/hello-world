@@ -10,16 +10,17 @@
 # Configuration
 STACK_NAME ?= hello-world-ecr-ecs-fargate
 AWS_REGION ?= eu-west-1
-TAG ?= latest-ecr-ecs-fargate
 VERSION_SUFFIX := -ecr-ecs-fargate
+# Default TAG uses git short SHA with suffix (override with TAG=v4.3.3-ecr-ecs-fargate)
+TAG ?= $(shell git rev-parse --short HEAD)$(VERSION_SUFFIX)
 
 help:
 	@echo "Hello World ECS Fargate Deployment"
 	@echo ""
 	@echo "Usage: make [target] [TAG=version]"
 	@echo ""
-	@echo "NOTE: This branch uses version suffix: $(VERSION_SUFFIX)"
-	@echo "      Example tag: v4.4.0$(VERSION_SUFFIX)"
+	@echo "Tagging: Default uses git SHA ($(TAG))"
+	@echo "         For releases use: TAG=v4.4.0$(VERSION_SUFFIX)"
 	@echo ""
 	@echo "Infrastructure:"
 	@echo "  deploy      Deploy/update CloudFormation stack"
@@ -27,7 +28,7 @@ help:
 	@echo ""
 	@echo "Docker:"
 	@echo "  ecr-login   Login to ECR"
-	@echo "  ecr-push    Build and push image to ECR (TAG=version)"
+	@echo "  ecr-push    Build and push image to ECR"
 	@echo ""
 	@echo "ECS:"
 	@echo "  redeploy    Force new ECS deployment (same image)"
@@ -35,8 +36,9 @@ help:
 	@echo "  logs        Tail CloudWatch logs"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make deploy"
-	@echo "  make ecr-push TAG=v4.4.0$(VERSION_SUFFIX)"
+	@echo "  make ecr-push                              # uses git SHA"
+	@echo "  make ecr-push TAG=v4.4.0$(VERSION_SUFFIX)  # release tag"
+	@echo "  make deploy                                # deploy with current TAG"
 	@echo "  make status"
 
 # Get ECR URI from CloudFormation outputs

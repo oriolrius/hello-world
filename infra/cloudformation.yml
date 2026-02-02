@@ -4,8 +4,7 @@ Description: Hello World web server on ECS Fargate
 Parameters:
   ImageTag:
     Type: String
-    Description: Docker image tag to deploy
-    Default: 'latest'
+    Description: Docker image tag to deploy (required, e.g., v4.3.3-ecr-ecs-fargate or sha-abc1234-ecr-ecs-fargate)
 
   AllowedIP:
     Type: String
