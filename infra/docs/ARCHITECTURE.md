@@ -174,9 +174,7 @@ The architecture diagram was created using [draw.io](https://app.diagrams.net/).
 **Base generation (optional):**
 
 ```bash
-cd tools
-source .venv/bin/activate
-python generate_infra_diagram.py
+uv run tools/generate_infra_diagram.py
 ```
 
 This produces a `.dot` file that can be converted to `.drawio` format using `graphviz2drawio`, then manually refined in draw.io.

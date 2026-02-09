@@ -34,7 +34,7 @@ curl http://<public-ip>:49000
 ### Delete
 
 ```bash
-aws cloudformation delete-stack --stack-name hello-world
+aws cloudformation delete-stack --stack-name hello-world --region eu-west-1
 ```
 
 ## Stack Overview
