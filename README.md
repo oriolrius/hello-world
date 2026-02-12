@@ -2,6 +2,14 @@
 
 Simple web server that returns `hello-world`.
 
+## Prerequisites
+
+Install [uv](https://docs.astral.sh/uv/):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
 ## Installation
 
 ```bash
