@@ -6,12 +6,12 @@ A teaching project that demonstrates the evolution of DevOps practices. The appl
 
 This version introduces **CI/CD fundamentals** with GitHub Actions:
 
-| Practice | Implementation |
-|----------|----------------|
-| Code Quality | Automated linting with `ruff` |
-| Testing | Unit tests with `pytest` |
-| Build | Python wheel packaging with `uv build` |
-| Release | Automated GitHub releases on tag push |
+| Practice     | Implementation                           |
+| ------------ | ---------------------------------------- |
+| Code Quality | Automated linting with `ruff`          |
+| Testing      | Unit tests with `pytest`               |
+| Build        | Python wheel packaging with `uv build` |
+| Release      | Automated GitHub releases on tag push    |
 
 ### Evolution from v1.x
 
@@ -59,10 +59,10 @@ uvx --from ./dist/hello_world-2.0.3-py3-none-any.whl hello-world
 
 ## Parameters
 
-| Flag | Description | Default |
-|------|-------------|---------|
+| Flag           | Description  | Default     |
+| -------------- | ------------ | ----------- |
 | `-b, --bind` | Bind address | `0.0.0.0` |
-| `-p, --port` | Port number | `49000` |
+| `-p, --port` | Port number  | `49000`   |
 
 ## Examples
 
