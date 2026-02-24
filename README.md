@@ -2,6 +2,14 @@
 
 A teaching project that demonstrates the evolution of DevOps practices. The application itself is intentionally trivial — a web server that returns "hello-world" — because the focus is on **how software is built, tested, and delivered**, not the application logic.
 
+> ⚠️ **Important:** After completing your work, remember to **delete the CloudFormation stack** or **stop the EC2 instance** to avoid unnecessary AWS charges.
+>
+> ```bash
+> aws cloudformation delete-stack --stack-name hello-world --region eu-west-1
+> ```
+>
+> 📝 For the homework assignment, see [HOMEWORK.md](HOMEWORK.md).
+
 ## What This Version Demonstrates (v4.x)
 
 This version introduces **Containerization** with Docker and **Infrastructure as Code** with CloudFormation UserData:
@@ -229,6 +237,7 @@ gh workflow run deploy.yml
 
 | Document | Description |
 |----------|-------------|
+| [HOMEWORK.md](HOMEWORK.md) | Session 4 assignment instructions |
 | [docker/README.md](docker/README.md) | Docker configuration (Dockerfile, Compose) |
 | [infra/README.md](infra/README.md) | AWS CloudFormation deployment |
 | [infra/docs/ARCHITECTURE.md](infra/docs/ARCHITECTURE.md) | AWS infrastructure architecture |
