@@ -224,3 +224,15 @@ gh secret set AWS_SECRET_ACCESS_KEY --body "your-secret"
 # Trigger manual deployment
 gh workflow run deploy.yml
 ```
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [docker/README.md](docker/README.md) | Docker configuration (Dockerfile, Compose) |
+| [infra/README.md](infra/README.md) | AWS CloudFormation deployment |
+| [infra/docs/ARCHITECTURE.md](infra/docs/ARCHITECTURE.md) | AWS infrastructure architecture |
+| [.github/workflows/README.md](.github/workflows/README.md) | CI/CD workflows |
+| [.github/workflows/docs/ARCHITECTURE.md](.github/workflows/docs/ARCHITECTURE.md) | CI/CD pipeline architecture |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+| [CLAUDE.md](CLAUDE.md) | Claude Code instructions |
