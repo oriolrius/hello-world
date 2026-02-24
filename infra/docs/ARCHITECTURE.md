@@ -79,7 +79,7 @@ aws cloudformation wait stack-delete-complete --stack-name hello-world
 
 | Resource | Estimated Monthly Cost |
 |----------|----------------------|
-| EC2 t3.micro | ~$8.50 (on-demand) |
+| EC2 t3a.micro | ~$8.50 (on-demand) |
 | Data transfer | Variable |
 | **Total** | ~$10/month |
 

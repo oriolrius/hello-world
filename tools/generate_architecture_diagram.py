@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """
 Generate architecture overview diagram for README.md.
-v5.x - CloudFormation + Ansible + Docker deployment.
+v4.x - CloudFormation + UserData + Docker deployment.
 """
 
 from diagrams import Diagram, Cluster, Edge
 from diagrams.aws.compute import EC2
 from diagrams.aws.management import Cloudformation
 from diagrams.onprem.ci import GithubActions
-from diagrams.onprem.iac import Ansible
 from diagrams.onprem.container import Docker
 from diagrams.onprem.registry import Harbor
 
@@ -24,7 +23,7 @@ graph_attr = {
 }
 
 with Diagram(
-    "Architecture Overview (v5.x)",
+    "Architecture Overview (v4.x)",
     filename=OUTPUT_PATH,
     show=False,
     direction="TB",
@@ -43,17 +42,14 @@ with Diagram(
             build >> Edge(color="#666666") >> docker_build >> Edge(color="#666666") >> registry
 
         with Cluster("Deploy Workflow"):
-            cfn = Cloudformation("CloudFormation")
-            ansible = Ansible("Ansible")
-
-            cfn >> Edge(color="#666666") >> ansible
+            cfn = Cloudformation("CloudFormation\n+ UserData")
 
     with Cluster("EC2 Instance"):
         with Cluster("Docker Engine"):
             container = Docker("hello-world\ncontainer\nport 49000")
 
     registry >> Edge(color="#48BB78", style="dashed", label="pull image") >> container
-    ansible >> Edge(color="#48BB78", style="bold", label="SSH + docker compose") >> container
+    cfn >> Edge(color="#48BB78", style="bold", label="UserData bootstrap") >> container
 
 print(f"Generated: {OUTPUT_PATH}.png")
 print(f"Generated: {OUTPUT_PATH}.dot")

@@ -28,7 +28,7 @@ Creates a minimal AWS environment:
 - VPC with public subnet
 - Internet Gateway with routing
 - Security Group (ports 22, 49000)
-- EC2 instance (t3.micro, Ubuntu 24.04)
+- EC2 instance (t3a.micro, Ubuntu 24.04)
 
 ## Parameters
 

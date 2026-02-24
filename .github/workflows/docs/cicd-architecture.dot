@@ -1,10 +1,10 @@
-digraph "CI/CD Pipeline (v5.x)" {
-	graph [bb="0,0,287,1283",
+digraph "CI/CD Pipeline (v4.x)" {
+	graph [bb="0,0,287,1074",
 		bgcolor=white,
 		fontcolor="#2D3436",
 		fontname="Sans-Serif",
 		fontsize=12,
-		label="CI/CD Pipeline (v5.x)",
+		label="CI/CD Pipeline (v4.x)",
 		lheight=0.18,
 		lp="143.5,10.5",
 		lwidth=1.68,
@@ -28,14 +28,14 @@ digraph "CI/CD Pipeline (v5.x)" {
 	];
 	edge [color="#7B8894"];
 	subgraph "cluster_Release Workflow" {
-		graph [bb="8,29,279,1109",
+		graph [bb="8,29,279,900",
 			bgcolor="#E5F5FD",
 			fontname="Sans-Serif",
 			fontsize=12,
 			label="Release Workflow",
 			labeljust=l,
 			lheight=0.18,
-			lp="69,1098.5",
+			lp="69,889.5",
 			lwidth=1.47,
 			pencolor="#AEB6BE",
 			rankdir=LR,
@@ -43,190 +43,177 @@ digraph "CI/CD Pipeline (v5.x)" {
 			style=rounded
 		];
 		subgraph "cluster_Quality Gates" {
-			graph [bb="16,877,271,1080",
+			graph [bb="16,668,271,871",
 				bgcolor="#EBF3E7",
 				fontname="Sans-Serif",
 				fontsize=12,
 				label="Quality Gates",
 				labeljust=l,
 				lheight=0.18,
-				lp="64.5,1069.5",
+				lp="64.5,860.5",
 				lwidth=1.12,
 				pencolor="#AEB6BE",
 				rankdir=LR,
 				shape=box,
 				style=rounded
 			];
-			"953b621240f34c4381182365a52b35e1"	[height=2.3056,
-				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+			"3eb81e39eec64d35a74944c7c60d41bd"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
 				label="lint
 ruff check/format",
-				pos="212,968",
+				pos="212,759",
 				shape=none,
 				width=1.4028];
-			"5e7d89115429492eb20c6f41ae12216a"	[height=2.3056,
-				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+			f228acc4f57746419ac5f0a70ae294c4	[height=2.3056,
+				image="/home/oriol/esade/hello-world/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
 				label="test
 pytest",
-				pos="75,968",
+				pos="75,759",
 				shape=none,
 				width=1.4028];
 		}
 		subgraph "cluster_Build Artifacts" {
-			graph [bb="16,666,271,869",
+			graph [bb="16,457,271,660",
 				bgcolor="#EBF3E7",
 				fontname="Sans-Serif",
 				fontsize=12,
 				label="Build Artifacts",
 				labeljust=l,
 				lheight=0.18,
-				lp="66,858.5",
+				lp="66,649.5",
 				lwidth=1.17,
 				pencolor="#AEB6BE",
 				rankdir=LR,
 				shape=box,
 				style=rounded
 			];
-			"4fd6349168724d55b205d515efa7d502"	[height=2.3056,
-				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+			dfc6f1c615b84fa9bac91f827bb7ce83	[height=2.3056,
+				image="/home/oriol/esade/hello-world/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
 				label="build
 uv build",
-				pos="212,757",
+				pos="212,548",
 				shape=none,
 				width=1.4028];
-			"8a69a40ce22c4baf943522b9abbdcbe6"	[height=2.3056,
-				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/container/docker.png",
+			"996507f0867640619115c8a18581b28d"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/.venv/lib/python3.13/site-packages/resources/onprem/container/docker.png",
 				label="docker
 build & push",
-				pos="75,757",
+				pos="75,548",
 				shape=none,
 				width=1.4028];
 		}
 		subgraph cluster_Publish {
-			graph [bb="16,455,134,658",
+			graph [bb="16,246,134,449",
 				bgcolor="#EBF3E7",
 				fontname="Sans-Serif",
 				fontsize=12,
 				label=Publish,
 				labeljust=l,
 				lheight=0.18,
-				lp="45,647.5",
+				lp="45,438.5",
 				lwidth=0.58,
 				pencolor="#AEB6BE",
 				rankdir=LR,
 				shape=box,
 				style=rounded
 			];
-			"477e0ac3c9eb4e01b8fb1d4105514f08"	[height=2.3056,
-				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+			"54d8573ca3854136a5ee7fda2280604f"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
 				label="release
 GitHub Release",
-				pos="75,546",
+				pos="75,337",
 				shape=none,
 				width=1.4028];
 		}
 		subgraph "cluster_Deploy to AWS" {
-			graph [bb="153,37,271,643.5",
+			graph [bb="153,37,271,434.5",
 				bgcolor="#EBF3E7",
 				fontname="Sans-Serif",
 				fontsize=12,
 				label="Deploy to AWS",
 				labeljust=l,
 				lheight=0.18,
-				lp="205,633",
+				lp="205,424",
 				lwidth=1.22,
 				pencolor="#AEB6BE",
 				rankdir=LR,
 				shape=box,
 				style=rounded
 			];
-			"567f50ebcc734c97b61e485b534bba1d"	[height=1.9028,
-				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
+			c9b9d499e4ad4ca5a6b72e452a34fbc7	[height=1.9028,
+				image="/home/oriol/esade/hello-world/.venv/lib/python3.13/site-packages/resources/onprem/ci/github-actions.png",
 				label=deploy,
-				pos="212,546",
-				shape=none,
-				width=1.4028];
-			a586cc2d814e43e8982c7a46be566fc6	[height=2.3056,
-				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/aws/management/cloudformation.png",
-				label="CloudFormation
-create infra",
 				pos="212,337",
 				shape=none,
 				width=1.4028];
-			"567f50ebcc734c97b61e485b534bba1d" -> a586cc2d814e43e8982c7a46be566fc6	[color="#ED8936",
-				dir=forward,
-				fontcolor="#2D3436",
-				fontname="Sans-Serif",
-				fontsize=13,
-				pos="e,212,420.33 212,477.28 212,477.28 212,430.33 212,430.33"];
-			"8b291a462a094025b6e4aeb67c108345"	[height=2.3056,
-				image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/iac/ansible.png",
-				label="Ansible
-configure & deploy",
+			"371abdb5d17f4c7280ab3b288ad5963a"	[height=2.3056,
+				image="/home/oriol/esade/hello-world/.venv/lib/python3.13/site-packages/resources/aws/management/cloudformation.png",
+				label="CloudFormation
++ UserData",
 				pos="212,128",
 				shape=none,
 				width=1.4028];
-			a586cc2d814e43e8982c7a46be566fc6 -> "8b291a462a094025b6e4aeb67c108345"	[color="#ED8936",
+			c9b9d499e4ad4ca5a6b72e452a34fbc7 -> "371abdb5d17f4c7280ab3b288ad5963a"	[color="#ED8936",
 				dir=forward,
 				fontcolor="#2D3436",
 				fontname="Sans-Serif",
 				fontsize=13,
-				pos="e,212,211.26 212,253.8 212,253.8 212,221.26 212,221.26"];
+				pos="e,212,211.33 212,268.28 212,268.28 212,221.33 212,221.33"];
 		}
-		"953b621240f34c4381182365a52b35e1" -> "4fd6349168724d55b205d515efa7d502"	[color="#48BB78",
+		"3eb81e39eec64d35a74944c7c60d41bd" -> dfc6f1c615b84fa9bac91f827bb7ce83	[color="#48BB78",
 			dir=forward,
 			fontcolor="#2D3436",
 			fontname="Sans-Serif",
 			fontsize=13,
-			pos="e,237.25,840.01 237.25,884.91 237.25,884.91 237.25,850.01 237.25,850.01"];
-		"953b621240f34c4381182365a52b35e1" -> "8a69a40ce22c4baf943522b9abbdcbe6"	[color="#48BB78",
+			pos="e,237.25,631.01 237.25,675.91 237.25,675.91 237.25,641.01 237.25,641.01"];
+		"3eb81e39eec64d35a74944c7c60d41bd" -> "996507f0867640619115c8a18581b28d"	[color="#48BB78",
 			dir=forward,
 			fontcolor="#2D3436",
 			fontname="Sans-Serif",
 			fontsize=13,
-			pos="e,100.25,840.12 212,884.99 212,867.9 212,855 212,855 212,855 100.25,855 100.25,855 100.25,855 100.25,850.12 100.25,850.12"];
-		"5e7d89115429492eb20c6f41ae12216a" -> "4fd6349168724d55b205d515efa7d502"	[color="#48BB78",
+			pos="e,100.25,631.12 212,675.99 212,658.9 212,646 212,646 212,646 100.25,646 100.25,646 100.25,646 100.25,641.12 100.25,641.12"];
+		f228acc4f57746419ac5f0a70ae294c4 -> dfc6f1c615b84fa9bac91f827bb7ce83	[color="#48BB78",
 			dir=forward,
 			fontcolor="#2D3436",
 			fontname="Sans-Serif",
 			fontsize=13,
-			pos="e,186.75,840.01 75,884.88 75,875.94 75,870 75,870 75,870 186.75,870 186.75,870 186.75,870 186.75,850.01 186.75,850.01"];
-		"5e7d89115429492eb20c6f41ae12216a" -> "8a69a40ce22c4baf943522b9abbdcbe6"	[color="#48BB78",
+			pos="e,186.75,631.01 75,675.88 75,666.94 75,661 75,661 75,661 186.75,661 186.75,661 186.75,661 186.75,641.01 186.75,641.01"];
+		f228acc4f57746419ac5f0a70ae294c4 -> "996507f0867640619115c8a18581b28d"	[color="#48BB78",
 			dir=forward,
 			fontcolor="#2D3436",
 			fontname="Sans-Serif",
 			fontsize=13,
-			pos="e,49.75,840.01 49.75,884.91 49.75,884.91 49.75,850.01 49.75,850.01"];
-		"4fd6349168724d55b205d515efa7d502" -> "477e0ac3c9eb4e01b8fb1d4105514f08"	[color="#9F7AEA",
+			pos="e,49.75,631.01 49.75,675.91 49.75,675.91 49.75,641.01 49.75,641.01"];
+		dfc6f1c615b84fa9bac91f827bb7ce83 -> "54d8573ca3854136a5ee7fda2280604f"	[color="#9F7AEA",
 			dir=forward,
 			fontcolor="#2D3436",
 			fontname="Sans-Serif",
 			fontsize=13,
-			pos="e,125.61,621 195.17,673.97 195.17,645.66 195.17,621 195.17,621 195.17,621 135.61,621 135.61,621"];
-		"4fd6349168724d55b205d515efa7d502" -> "567f50ebcc734c97b61e485b534bba1d"	[color="#ED8936",
+			pos="e,125.61,412 195.17,464.97 195.17,436.66 195.17,412 195.17,412 195.17,412 135.61,412 135.61,412"];
+		dfc6f1c615b84fa9bac91f827bb7ce83 -> c9b9d499e4ad4ca5a6b72e452a34fbc7	[color="#ED8936",
 			dir=forward,
 			fontcolor="#2D3436",
 			fontname="Sans-Serif",
 			fontsize=13,
-			pos="e,228.83,614.73 228.83,673.91 228.83,673.91 228.83,624.73 228.83,624.73"];
+			pos="e,228.83,405.73 228.83,464.91 228.83,464.91 228.83,415.73 228.83,415.73"];
 	}
-	d30f4618fe834ac49bd898800b2f7a6d	[height=2.3056,
-		image="/home/oriol/t/hello-world/tools/.venv/lib/python3.13/site-packages/resources/onprem/vcs/github.png",
+	"0cb1d0cb8db349ec9bab4ba20c195c33"	[height=2.3056,
+		image="/home/oriol/esade/hello-world/.venv/lib/python3.13/site-packages/resources/onprem/vcs/github.png",
 		label="Push tag v*
 or workflow_dispatch",
-		pos="143,1200",
+		pos="143,991",
 		shape=none,
 		width=1.4028];
-	d30f4618fe834ac49bd898800b2f7a6d -> "953b621240f34c4381182365a52b35e1"	[color="#4299E1",
+	"0cb1d0cb8db349ec9bab4ba20c195c33" -> "3eb81e39eec64d35a74944c7c60d41bd"	[color="#4299E1",
 		dir=forward,
 		fontcolor="#2D3436",
 		fontname="Sans-Serif",
 		fontsize=13,
-		pos="e,177.5,1051.3 177.5,1116.9 177.5,1116.9 177.5,1061.3 177.5,1061.3"];
-	d30f4618fe834ac49bd898800b2f7a6d -> "5e7d89115429492eb20c6f41ae12216a"	[color="#4299E1",
+		pos="e,177.5,842.3 177.5,907.9 177.5,907.9 177.5,852.3 177.5,852.3"];
+	"0cb1d0cb8db349ec9bab4ba20c195c33" -> f228acc4f57746419ac5f0a70ae294c4	[color="#4299E1",
 		dir=forward,
 		fontcolor="#2D3436",
 		fontname="Sans-Serif",
 		fontsize=13,
-		pos="e,109,1051.3 109,1116.9 109,1116.9 109,1061.3 109,1061.3"];
+		pos="e,109,842.3 109,907.9 109,907.9 109,852.3 109,852.3"];
 }

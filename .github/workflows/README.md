@@ -10,8 +10,8 @@
 
 ```bash
 # Create and push a version tag
-git tag v5.3.0
-git push origin v5.3.0
+git tag v4.3.4
+git push origin v4.3.4
 ```
 
 Or manually via GitHub Actions UI using `workflow_dispatch`.

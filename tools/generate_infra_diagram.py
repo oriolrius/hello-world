@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate infrastructure diagram for infra/docs/
-v5.x - AWS CloudFormation resources.
+v4.x - AWS CloudFormation resources.
 """
 
 from diagrams import Diagram, Cluster, Edge
@@ -22,7 +22,7 @@ graph_attr = {
 }
 
 with Diagram(
-    "AWS Infrastructure (v5.x)",
+    "AWS Infrastructure (v4.x)",
     filename=OUTPUT_PATH,
     show=False,
     direction="TB",
@@ -39,7 +39,7 @@ with Diagram(
 
             with Cluster("Public Subnet 10.0.1.0/24"):
                 with Cluster("Security Group\nports 22, 49000"):
-                    ec2 = EC2("EC2 t3.micro\nUbuntu 24.04")
+                    ec2 = EC2("EC2 t3a.micro\nUbuntu 24.04")
 
     users >> Edge(color="#4299E1", label="HTTP :49000") >> igw
     igw >> Edge(color="#4299E1") >> rt

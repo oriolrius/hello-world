@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """
 Generate CI/CD workflow diagram for .github/workflows/docs/
-v5.x - Release workflow with lint, test, build, docker, release, and deploy jobs.
+v4.x - Release workflow with lint, test, build, docker, release, and deploy jobs.
 """
 
 from diagrams import Diagram, Cluster, Edge
 from diagrams.onprem.ci import GithubActions
 from diagrams.onprem.vcs import Github
 from diagrams.aws.management import Cloudformation
-from diagrams.onprem.iac import Ansible
 from diagrams.onprem.container import Docker
 from diagrams.programming.language import Python
 
@@ -24,7 +23,7 @@ graph_attr = {
 }
 
 with Diagram(
-    "CI/CD Pipeline (v5.x)",
+    "CI/CD Pipeline (v4.x)",
     filename=OUTPUT_PATH,
     show=False,
     direction="TB",
@@ -47,8 +46,7 @@ with Diagram(
 
         with Cluster("Deploy to AWS"):
             deploy = GithubActions("deploy")
-            cfn = Cloudformation("CloudFormation\ncreate infra")
-            ansible = Ansible("Ansible\nconfigure & deploy")
+            cfn = Cloudformation("CloudFormation\n+ UserData")
 
     trigger >> Edge(color="#4299E1") >> lint
     trigger >> Edge(color="#4299E1") >> test
@@ -61,7 +59,6 @@ with Diagram(
     build >> Edge(color="#9F7AEA") >> release
     build >> Edge(color="#ED8936") >> deploy
     deploy >> Edge(color="#ED8936") >> cfn
-    cfn >> Edge(color="#ED8936") >> ansible
 
 print(f"Generated: {OUTPUT_PATH}.png")
 print(f"Generated: {OUTPUT_PATH}.dot")

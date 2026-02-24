@@ -61,9 +61,9 @@ Builds and pushes Docker image to GitHub Container Registry.
 
 **Image tags:**
 - `latest` (for tagged releases)
-- `{version}` (e.g., 5.2.0)
-- `{major}.{minor}` (e.g., 5.2)
-- `{major}` (e.g., 5)
+- `{version}` (e.g., 4.3.3)
+- `{major}.{minor}` (e.g., 4.3)
+- `{major}` (e.g., 4)
 - `{sha}` (commit SHA)
 
 **Depends on:** lint, test
