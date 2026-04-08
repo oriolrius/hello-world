@@ -22,3 +22,13 @@ clusterRoleBinding:
   create: true
   # Using view role by default, admin-user service account has cluster-admin
   clusterRoleName: cluster-admin
+
+# Resource requests/limits tuned for t3a.small nodes (2 vCPU, 2 GB RAM)
+# Mirrors hello-world app sizing; leaves headroom for system pods
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

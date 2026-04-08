@@ -1,6 +1,25 @@
 # Headlamp - Kubernetes Web Dashboard
 
-[Headlamp](https://headlamp.dev/) is a web-based Kubernetes dashboard for monitoring and managing clusters.
+[Headlamp](https://headlamp.dev/) is a web-based Kubernetes dashboard running inside the `esade-teaching` EKS cluster, providing visibility and management of cluster resources.
+
+## Desired State
+
+| Property | Value |
+|----------|-------|
+| Namespace | `headlamp` |
+| Replicas | 1 |
+| Mode | In-cluster (ServiceAccount-based API access) |
+| Exposure | AWS LoadBalancer on port 80 |
+| Auth | Token from `admin-user` ServiceAccount (`cluster-admin`) |
+
+### Resources
+
+Tuned for `t3a.small` nodes (2 vCPU, 2 GB RAM), leaving headroom for system pods:
+
+| | CPU | Memory |
+|-|-----|--------|
+| Request | 50m | 64Mi |
+| Limit | 200m | 128Mi |
 
 ## Architecture
 
@@ -8,195 +27,63 @@
 User Browser
      |
      v
-AWS LoadBalancer:80
+AWS ELB :80  (provisioned by service.type: LoadBalancer)
      |
      v
-Headlamp (Token Auth)
-  - Token from admin-user ServiceAccount
+Headlamp Pod  (namespace: headlamp)
      |
      v
-Kubernetes API Server
+Kubernetes API Server  (via headlamp ServiceAccount, cluster-admin)
 ```
 
-## Prerequisites
+## Manifests
 
-### 1. Configure kubectl for EKS
+| File | Purpose |
+|------|---------|
+| `namespace.yaml` | Isolates all Headlamp resources in the `headlamp` namespace |
+| `values.yaml` | Helm values — in-cluster mode, LoadBalancer service, resource limits |
+| `admin-user.yaml` | ServiceAccount + ClusterRoleBinding + persistent token Secret for login |
+| `basic-auth-proxy.yaml` | Optional nginx proxy adding HTTP Basic Auth on port 49100 |
+
+### Admin User (`admin-user.yaml`)
+
+Creates three resources in the `headlamp` namespace:
+
+- `ServiceAccount/admin-user` — identity used to log in to the dashboard
+- `ClusterRoleBinding/headlamp-admin-user` — binds `admin-user` to `cluster-admin`
+- `Secret/admin-user-token` — persistent token (type `kubernetes.io/service-account-token`)
+
+Headlamp authenticates via Kubernetes bearer tokens. The admin-user token grants full cluster visibility.
+
+## Deployment
 
 ```bash
-# List available clusters
-aws eks list-clusters --region eu-west-1
-
-# Configure kubectl
-aws eks update-kubeconfig --name esade-teaching --region eu-west-1
-
-# Verify connection
-kubectl cluster-info
+cd tools/headlamp && ./deploy.sh
 ```
 
-### 2. Install Helm
+The script: creates the namespace, installs the Helm chart with `values.yaml`, applies `admin-user.yaml`, and waits for rollout.
+
+### Get access token
 
 ```bash
-# Check if helm is installed
-helm version
-
-# If not, install it
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+kubectl get secret admin-user-token -n headlamp -o jsonpath='{.data.token}' | base64 -d
 ```
 
-## Quick Deploy
-
-```bash
-cd tools/headlamp
-./deploy.sh
-```
-
-## Manual Deployment
-
-### Step 1: Create namespace
-
-```bash
-kubectl apply -f namespace.yaml
-```
-
-**Source:** `namespace.yaml`
-- Creates `headlamp` namespace to isolate all Headlamp resources
-
-### Step 2: Add Helm repository
-
-```bash
-helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
-helm repo update
-```
-
-**Source:** Official Headlamp Helm chart from https://github.com/headlamp-k8s/headlamp
-
-### Step 3: Install Headlamp
-
-```bash
-helm upgrade --install headlamp headlamp/headlamp \
-  --namespace headlamp \
-  --values values.yaml \
-  --wait
-```
-
-**Source:** `values.yaml`
-
-| Parameter | Value | Why |
-|-----------|-------|-----|
-| `config.inCluster` | `true` | Headlamp runs inside cluster, uses ServiceAccount for API access |
-| `service.type` | `LoadBalancer` | Exposes Headlamp directly via AWS ELB |
-| `service.port` | `80` | Default HTTP port |
-| `serviceAccount.create` | `true` | Required for Headlamp to access Kubernetes API |
-| `clusterRoleBinding.clusterRoleName` | `cluster-admin` | Full cluster access for dashboard |
-
-### Step 4: Create admin user
-
-```bash
-kubectl apply -f admin-user.yaml
-```
-
-**Source:** `admin-user.yaml`
-
-| Resource | Purpose |
-|----------|---------|
-| `ServiceAccount/admin-user` | Identity for dashboard login |
-| `ClusterRoleBinding/headlamp-admin-user` | Grants `cluster-admin` role |
-| `Secret/admin-user-token` | Stores persistent auth token |
-
-**Why ServiceAccount?**
-- Headlamp authenticates via Kubernetes tokens, not username/password
-- ServiceAccount provides a token that grants API access
-- ClusterRoleBinding defines what the token can do
-
-## Access the Dashboard
-
-### Get the URL
+### Get LoadBalancer URL
 
 ```bash
 kubectl get svc headlamp -n headlamp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 ```
 
-The URL format is: `http://<loadbalancer-hostname>`
-
-### Authentication
-
-Get the token:
-```bash
-kubectl get secret admin-user-token -n headlamp -o jsonpath='{.data.token}' | base64 -d
-```
-
-Paste the token in Headlamp's login screen.
-
-## Configuration Reference
-
-### Service Type
-
-Defined in `values.yaml`:
-```yaml
-service:
-  type: LoadBalancer
-  port: 80
-```
-
-The Headlamp service is exposed directly via AWS LoadBalancer on port 80.
-
 ## Uninstall
 
 ```bash
-# Remove all resources
 helm uninstall headlamp -n headlamp
 kubectl delete -f admin-user.yaml
 kubectl delete -f namespace.yaml
 ```
 
-## Troubleshooting
-
-### Check pod status
-```bash
-kubectl get pods -n headlamp
-```
-
-### Check Headlamp logs
-```bash
-kubectl logs -n headlamp -l app.kubernetes.io/name=headlamp
-```
-
-### LoadBalancer not getting external IP
-```bash
-# Check service status
-kubectl describe svc headlamp -n headlamp
-
-# AWS LoadBalancer can take 2-3 minutes to provision
-```
-
-### Token authentication not working
-```bash
-# Verify the admin-user ServiceAccount exists
-kubectl get sa admin-user -n headlamp
-
-# Verify the token secret exists
-kubectl get secret admin-user-token -n headlamp
-
-# Test token validity
-kubectl auth can-i get pods --as=system:serviceaccount:headlamp:admin-user
-```
-
-## Optional: Basic Auth Proxy
-
-If you need an additional layer of HTTP Basic Authentication in front of Headlamp, you can deploy the nginx proxy:
-
-```bash
-kubectl apply -f basic-auth-proxy.yaml
-```
-
-This creates:
-- nginx proxy with Basic Auth (admin / The2password.)
-- LoadBalancer on port 49100
-
-Access via: `http://<proxy-loadbalancer>:49100`
-
 ## Links
 
 - [Headlamp Documentation](https://headlamp.dev/docs/)
-- [Headlamp GitHub](https://github.com/headlamp-k8s/headlamp)
-- [Helm Chart Values](https://github.com/headlamp-k8s/headlamp/blob/main/charts/headlamp/values.yaml)
+- [Helm Chart Values Reference](https://github.com/headlamp-k8s/headlamp/blob/main/charts/headlamp/values.yaml)
