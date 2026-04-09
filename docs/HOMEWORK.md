@@ -23,8 +23,8 @@ eksctl create cluster -f infra/eksctl-cluster.yaml
 | Cluster name | `esade-teaching` |
 | Region | `eu-west-1` |
 | Kubernetes version | 1.32 |
-| Node group | `students` (2x t3.medium, auto-scaling 1-3) |
-| Cost | ~$188/month (~$47/week) |
+| Node group | `students` (2x t3a.small, auto-scaling 1-3) |
+| Cost | ~$166/month (~$41/week) |
 
 ### 2. Create Per-Student Namespaces
 
