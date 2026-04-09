@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/name: hello-world
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - name: http
       port: 80
