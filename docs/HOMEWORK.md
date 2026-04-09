@@ -150,15 +150,31 @@ Upload each `kubeconfig-<student>.yaml` to **eCampus** as a private per-student 
 
 ### 5. Cleanup After Deadline
 
+Deleting a namespace cascades to all resources inside it (Role, ServiceAccount, RoleBinding, Secret, ResourceQuota, LimitRange) — no need to delete them individually.
+
 ```bash
+STUDENTS="alice bob carlos diana ..."
+
+# Delete all student namespaces and their contents
 for STUDENT in $STUDENTS; do
-  kubectl delete namespace hw-${STUDENT}
+  kubectl delete namespace hw-${STUDENT} --ignore-not-found
 done
 
-# Optionally scale down to reduce costs
+# Delete generated kubeconfig files
+rm -f kubeconfig-*.yaml
+
+# Optionally scale down node group to reduce costs
 eksctl scale nodegroup --cluster=esade-teaching \
   --name=students --nodes=1 --region=eu-west-1
 ```
+
+To verify all namespaces are gone:
+
+```bash
+kubectl get namespaces | grep hw-
+```
+
+Expected output: no output (all `hw-*` namespaces removed).
 
 ---
 
@@ -387,6 +403,13 @@ No resources found in hw-<yourname> namespace.
 
 > **This step is mandatory.** The cluster is shared. Leaving resources running wastes cluster capacity for other students.
 
+Once submitted, also delete the kubeconfig file from your local machine:
+
+```bash
+rm ~/Downloads/kubeconfig-<yourname>.yaml
+unset KUBECONFIG
+```
+
 ---
 
 ## Submission
@@ -403,6 +426,7 @@ Create a **PDF document** with the following screenshots. Each screenshot must s
 | 4 | `kubectl get pods` (after scaling to 4) | Horizontal scaling works |
 | 5 | `kubectl get pods -w` (after deleting a pod) | Self-healing: new pod replaces deleted one |
 | 6 | `kubectl get all` (after cleanup) | Clean namespace, all resources removed |
+| 7 | `ls ~/Downloads/kubeconfig-<yourname>.yaml` returning "No such file" | Kubeconfig deleted from local machine |
 
 ### Format
 
@@ -425,9 +449,10 @@ Create a **PDF document** with the following screenshots. Each screenshot must s
 | Cluster access verified (screenshot 1) | 10 |
 | Successful deployment with 2 running pods (screenshot 2) | 20 |
 | Load balancing demonstrated with different hostnames (screenshot 3) | 25 |
-| Scaling to 4 replicas demonstrated (screenshot 4) | 20 |
+| Scaling to 4 replicas demonstrated (screenshot 4) | 15 |
 | Self-healing demonstrated after pod deletion (screenshot 5) | 15 |
 | Cleanup completed, namespace empty (screenshot 6) | 10 |
+| Kubeconfig deleted from local machine (screenshot 7) | 5 |
 | **Total** | **100** |
 
 ---
