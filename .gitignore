@@ -13,5 +13,7 @@ wheels/
 deploy/inventory.ini
 
 aws_credentials.yaml
+.env.sh
+kubeconfig-*.yaml
 
 .playwright-mcp/

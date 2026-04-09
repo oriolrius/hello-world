@@ -107,7 +107,7 @@ wheels = [
 
 [[package]]
 name = "hello-world"
-version = "6.3.5"
+version = "6.4.0"
 source = { editable = "." }
 
 [package.dev-dependencies]
