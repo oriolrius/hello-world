@@ -263,18 +263,13 @@ deployment.apps/hello-world   2/2     2            2           1m
 
 ---
 
-### Step 5: Access the Application
+### Step 5: Access the Application and Verify Load Balancing
 
-Since LoadBalancers are restricted, use port-forwarding to reach the service:
-
-```bash
-kubectl port-forward svc/hello-world 8080:80
-```
-
-In a **separate terminal**, test the application:
+Run a temporary pod with `curl` that makes 10 requests through the service. The service DNS name `hello-world` resolves inside the cluster and distributes traffic across pods:
 
 ```bash
-for i in {1..10}; do curl -s http://localhost:8080/; done
+kubectl run curl-test --image=curlimages/curl --rm -it --restart=Never \
+  -- sh -c 'for i in $(seq 1 10); do curl -s http://hello-world/; echo; done'
 ```
 
 Expected output — **different pod hostnames** proving load balancing:
@@ -285,9 +280,10 @@ hello-world from hello-world-85df8f77cb-m9p3j
 hello-world from hello-world-85df8f77cb-a7x2k
 hello-world from hello-world-85df8f77cb-m9p3j
 ...
+pod "curl-test" deleted
 ```
 
-> Press `Ctrl+C` in the port-forward terminal when done.
+> **Note:** `kubectl port-forward` connects to a single pod per session, so it cannot demonstrate load balancing. The `kubectl run` approach above uses the ClusterIP service from inside the cluster, which round-robins across all pods.
 
 ---
 
@@ -403,7 +399,7 @@ Create a **PDF document** with the following screenshots. Each screenshot must s
 |---|-----------|----------------|
 | 1 | `kubectl get pods` (empty namespace) | Cluster access works |
 | 2 | `kubectl get all` (after deployment) | Deployment created with 2 running pods |
-| 3 | `curl` output (10 requests via port-forward) | Load balancing across different pod hostnames |
+| 3 | `kubectl run curl-test` output (10 requests) | Load balancing across different pod hostnames |
 | 4 | `kubectl get pods` (after scaling to 4) | Horizontal scaling works |
 | 5 | `kubectl get pods -w` (after deleting a pod) | Self-healing: new pod replaces deleted one |
 | 6 | `kubectl get all` (after cleanup) | Clean namespace, all resources removed |
