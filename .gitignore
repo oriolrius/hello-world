@@ -15,5 +15,6 @@ deploy/inventory.ini
 aws_credentials.yaml
 .env.sh
 kubeconfig-*.yaml
+hw7-delivery/
 
 .playwright-mcp/
