@@ -18,13 +18,13 @@ The cluster `esade-teaching` is already running in `eu-west-1` (Ireland), create
 eksctl create cluster -f infra/eksctl-cluster.yaml
 ```
 
-| Property | Value |
-|----------|-------|
-| Cluster name | `esade-teaching` |
-| Region | `eu-west-1` |
-| Kubernetes version | 1.32 |
-| Node group | `students` (2x t3a.small, auto-scaling 1-3) |
-| Cost | ~$166/month (~$41/week) |
+| Property           | Value                                         |
+| ------------------ | --------------------------------------------- |
+| Cluster name       | `esade-teaching`                            |
+| Region             | `eu-west-1`                                 |
+| Kubernetes version | 1.32                                          |
+| Node group         | `students` (2x t3a.small, auto-scaling 1-3) |
+| Cost               | ~$166/month (~$41/week)                      |
 
 ### 2. Create Per-Student Namespaces
 
@@ -146,7 +146,7 @@ done
 
 ### 4. Distribute
 
-Upload each `kubeconfig-<student>.yaml` to **eCampus** as a private per-student file (or send individually via email).
+Send each `kubeconfig-<student>.yaml` as an email attachment to the student's ESADE email address, from **joseporiol.rius@esade.edu**.
 
 ### 5. Cleanup After Deadline
 
@@ -185,7 +185,7 @@ Expected output: no output (all `hw-*` namespaces removed).
 Before you start, make sure you have:
 
 - **kubectl** installed ([install guide](https://kubernetes.io/docs/tasks/tools/))
-- Your personal **kubeconfig file** downloaded from eCampus (`kubeconfig-<yourname>.yaml`)
+- Your personal **kubeconfig file** received via email from `joseporiol.rius@esade.edu` (`kubeconfig-<yourname>.yaml`)
 - Basic familiarity with the terminal
 
 ### Deadline
@@ -199,7 +199,7 @@ Before you start, make sure you have:
 Set the `KUBECONFIG` environment variable to point to your personal kubeconfig file:
 
 ```bash
-export KUBECONFIG=~/Downloads/kubeconfig-<yourname>.yaml
+export KUBECONFIG=~/Downloads/kubeconfig-<yourname>.yaml  # adjust path if saved elsewhere
 ```
 
 Verify access:
@@ -268,14 +268,12 @@ NAME                               READY   STATUS    RESTARTS   AGE
 pod/hello-world-85df8f77cb-a7x2k   1/1     Running   0          1m
 pod/hello-world-85df8f77cb-m9p3j   1/1     Running   0          1m
 
-NAME                  TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-service/hello-world   LoadBalancer   10.100.x.x     <pending>     80:3xxxx/TCP   1m
+NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/hello-world   ClusterIP   10.100.x.x     <none>        80/TCP    1m
 
 NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/hello-world   2/2     2            2           1m
 ```
-
-> **Note:** The `EXTERNAL-IP` will show `<pending>` because LoadBalancers are disabled in your namespace quota. This is expected — you will use `port-forward` instead.
 
 ---
 
@@ -403,30 +401,21 @@ No resources found in hw-<yourname> namespace.
 
 > **This step is mandatory.** The cluster is shared. Leaving resources running wastes cluster capacity for other students.
 
-Once submitted, also delete the kubeconfig file from your local machine:
-
-```bash
-rm ~/Downloads/kubeconfig-<yourname>.yaml
-unset KUBECONFIG
-```
-
----
-
 ## Submission
 
 ### Deliverable
 
 Create a **PDF document** with the following screenshots. Each screenshot must show the full terminal output including the command you ran.
 
-| # | Screenshot | What It Proves |
-|---|-----------|----------------|
-| 1 | `kubectl get pods` (empty namespace) | Cluster access works |
-| 2 | `kubectl get all` (after deployment) | Deployment created with 2 running pods |
-| 3 | `kubectl run curl-test` output (10 requests) | Load balancing across different pod hostnames |
-| 4 | `kubectl get pods` (after scaling to 4) | Horizontal scaling works |
-| 5 | `kubectl get pods -w` (after deleting a pod) | Self-healing: new pod replaces deleted one |
-| 6 | `kubectl get all` (after cleanup) | Clean namespace, all resources removed |
-| 7 | `ls ~/Downloads/kubeconfig-<yourname>.yaml` returning "No such file" | Kubeconfig deleted from local machine |
+| # | Screenshot                                                             | What It Proves                                |
+| - | ---------------------------------------------------------------------- | --------------------------------------------- |
+| 1 | `kubectl get pods` (empty namespace)                                 | Cluster access works                          |
+| 2 | `kubectl get all` (after deployment)                                 | Deployment created with 2 running pods        |
+| 3 | `kubectl run curl-test` output (10 requests)                         | Load balancing across different pod hostnames |
+| 4 | `kubectl get pods` (after scaling to 4)                              | Horizontal scaling works                      |
+| 5 | `kubectl get pods -w` (after deleting a pod)                         | Self-healing: new pod replaces deleted one    |
+| 6 | `kubectl get all` (after cleanup)                                    | Clean namespace, all resources removed        |
+| 7 | `ls ~/Downloads/kubeconfig-<yourname>.yaml` returning "No such file" | Kubeconfig deleted from local machine         |
 
 ### Format
 
@@ -444,16 +433,16 @@ Create a **PDF document** with the following screenshots. Each screenshot must s
 
 ## Grading Criteria
 
-| Criteria | Points |
-|----------|--------|
-| Cluster access verified (screenshot 1) | 10 |
-| Successful deployment with 2 running pods (screenshot 2) | 20 |
-| Load balancing demonstrated with different hostnames (screenshot 3) | 25 |
-| Scaling to 4 replicas demonstrated (screenshot 4) | 15 |
-| Self-healing demonstrated after pod deletion (screenshot 5) | 15 |
-| Cleanup completed, namespace empty (screenshot 6) | 10 |
-| Kubeconfig deleted from local machine (screenshot 7) | 5 |
-| **Total** | **100** |
+| Criteria                                                            | Points        |
+| ------------------------------------------------------------------- | ------------- |
+| Cluster access verified (screenshot 1)                              | 10            |
+| Successful deployment with 2 running pods (screenshot 2)            | 20            |
+| Load balancing demonstrated with different hostnames (screenshot 3) | 25            |
+| Scaling to 4 replicas demonstrated (screenshot 4)                   | 15            |
+| Self-healing demonstrated after pod deletion (screenshot 5)         | 15            |
+| Cleanup completed, namespace empty (screenshot 6)                   | 10            |
+| Kubeconfig deleted from local machine (screenshot 7)                | 5             |
+| **Total**                                                     | **100** |
 
 ---
 
@@ -472,6 +461,7 @@ kubectl describe pod <pod-name>
 ```
 
 Check the Events section. Common causes:
+
 - **Insufficient resources:** The cluster is full. Wait for other students to clean up, or contact the instructor
 - **Image pull error:** Check that `ghcr.io/oriolrius/hello-world:v6` is accessible
 
@@ -494,12 +484,14 @@ kubectl describe deployment/hello-world
 
 ### Deployment YAML fails with "namespace not found"
 
-You are deploying into your pre-created namespace (`hw-<yourname>`), not `hello-world`. The manifests reference `namespace: hello-world` in metadata, but your kubeconfig overrides this. If you get namespace errors, apply with explicit namespace:
+Make sure you are on branch `v6.x` and have pulled the latest changes:
 
 ```bash
-kubectl apply -f k8s/deployment.yaml -n hw-<yourname>
-kubectl apply -f k8s/service.yaml -n hw-<yourname>
+git checkout v6.x
+git pull
 ```
+
+Then retry `kubectl apply -f k8s/deployment.yaml`.
 
 ---
 
