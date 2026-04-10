@@ -190,7 +190,7 @@ Before you start, make sure you have:
 
 ### Deadline
 
-**Before Session 8 (15 April 2026)**
+**Before Session 7 (15 April 2026, 17:30)**
 
 ---
 
@@ -421,7 +421,7 @@ Create a **PDF document** with the following screenshots. Each screenshot must s
 
 - **Filename:** `Homework7_YourName.pdf`
 - **Upload to:** eCampus Session 7 Assignment
-- **Deadline:** Before Session 8 (15 April 2026)
+- **Deadline:** Before Session 7 (15 April 2026, 17:30)
 
 ### Tips
 
