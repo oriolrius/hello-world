@@ -1,0 +1,13 @@
+# APP-07 AC#4: keep .git, virtualenvs, caches, tests and evidence OUT of the build context
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+dist
+evidence
+tests
+fixtures
+docs
+instructor
