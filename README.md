@@ -16,7 +16,7 @@ and prove the GitHub Actions workflow is green.
 This README ships with **one** deliberately marked typo. Your homework is to fix
 it as a browser commit:
 
-> Welcome to the DBAI course — this is your frist repository. <!-- DELIBERATE TYPO: "frist" -> "first" (fix me in S1 homework) -->
+> Welcome to the DBAI course — this is your first repository.
 
 Fix `frist` → `first`, commit it with a Conventional Commit message
 (`fix: correct typo in README`), and confirm Actions stays green.
