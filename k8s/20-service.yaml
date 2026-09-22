@@ -1,0 +1,15 @@
+# hello-world Service (APP-13): NodePort exposing port 80 -> container 8000 on
+# node port 30080, so the S8 lab can reach the app from the browser/tunnel.
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world
+  namespace: hello
+spec:
+  type: NodePort
+  selector:
+    app: hello-world
+  ports:
+    - port: 80
+      targetPort: 8000
+      nodePort: 30080
