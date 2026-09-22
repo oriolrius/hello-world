@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# S3 local commit-message guardrail (APP-04). Validates the message against the
+# course Conventional Commit contract using the LOCKED Commitizen (no global
+# install). Enable once after clone:  git config core.hooksPath .githooks
+# Bypass for a single commit with:     git commit --no-verify
+set -euo pipefail
+exec uv run cz check --commit-msg-file "$1"
