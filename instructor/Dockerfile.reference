@@ -1,0 +1,25 @@
+# INSTRUCTOR reference Dockerfile (APP-07 answer key). Students author their own
+# on branch s04-docker; the distributed starter does NOT ship this file.
+# Non-root uv build with a source-independent dependency cache layer.
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+WORKDIR /app
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
+
+# --- source-independent dependency cache layer ---
+# Copy ONLY the manifest + lock first and install locked NON-dev deps without the
+# project, so this layer is reused whenever only application source changes.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev --no-install-project
+
+# --- application source ---
+COPY hello_world/ ./hello_world/
+COPY config/ ./config/
+COPY README.md ./
+RUN uv sync --locked --no-dev
+
+# --- non-root runtime ---
+RUN useradd -m appuser && chown -R appuser:appuser /app
+USER appuser
+EXPOSE 8000
+# Start with NO runtime dependency sync and NO network install.
+CMD ["uv", "run", "--no-sync", "hello-world"]

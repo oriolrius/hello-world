@@ -1,0 +1,12 @@
+# INSTRUCTOR reference homework Compose (APP-07) — students author their own.
+# Two loopback-bound containers of the same image for the S4 port exercise.
+services:
+  hello:
+    build:
+      context: ..
+      dockerfile: instructor/Dockerfile.reference
+    image: hello-world:local
+    ports: ["127.0.0.1:8000:8000"]
+  hello2:
+    image: hello-world:local
+    ports: ["127.0.0.1:8001:8000"]
