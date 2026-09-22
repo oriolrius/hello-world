@@ -1,10 +1,12 @@
-# INSTRUCTOR reference release pipeline (APP-09 answer key). Students author their
-# own; the starter ships hello.yml (S1) and ci.yml (S3) but NOT this. Publishes a
-# student-owned GHCR image ONLY after tests pass, tagged by the triggering v*.
+# INSTRUCTOR reference release+deploy pipeline (APP-09/APP-11 answer key).
+# Students author their own; the starter keeps hello.yml (S1) and ci.yml (S3)
+# separate and does NOT ship this. On a v* tag: test -> build-push (GHCR) ->
+# deploy (SSH the exact release onto the VM). A failure at any stage propagates.
 name: release
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "v*"
 permissions:
   contents: read
   packages: write
@@ -20,7 +22,7 @@ jobs:
       - run: uv run ruff check .
       - run: uv run pytest -q
   build-push:
-    needs: test          # broken tests block publication AND every downstream deploy
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,3 +42,26 @@ jobs:
           tags: |
             ghcr.io/${{ steps.ns.outputs.ns }}/hello-world:${{ github.ref_name }}
             ghcr.io/${{ steps.ns.outputs.ns }}/hello-world:latest
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-action@v1
+        env:
+          HELLO_IMAGE_TAG: ${{ github.ref_name }}
+          GHCR_NAMESPACE: ${{ github.repository_owner }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        with:
+          host: ${{ secrets.VM_HOST }}      # the stable Elastic IP
+          username: ubuntu
+          key: ${{ secrets.VM_SSH_KEY }}    # the dedicated deploy key (read-only on GHCR)
+          envs: HELLO_IMAGE_TAG,GHCR_NAMESPACE,GHCR_TOKEN
+          script: |
+            set -euo pipefail
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "${GHCR_NAMESPACE,,}" --password-stdin
+            cd ~/hello-world                 # holds the committed registry compose.yml
+            docker compose pull              # fails nonzero on a bad pull; never runs an old cached image
+            docker compose up -d
+            sleep 4
+            curl -sf http://localhost:8000/health >/dev/null || { echo "post-deploy health FAILED"; exit 1; }
+            echo "RUNNING_IMAGE=$(docker inspect --format '{{.Config.Image}}' "$(docker compose ps -q hello)")"
