@@ -1,0 +1,10 @@
+# Retained S1 "hello" workflow (kept across sessions). The student-authored
+# CI workflow (ci.yml) is NOT shipped in the starter — students write it in S3.
+name: hello
+on:
+  workflow_dispatch:
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "hello, world"
