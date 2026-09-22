@@ -1,0 +1,42 @@
+# INSTRUCTOR reference release pipeline (APP-09 answer key). Students author their
+# own; the starter ships hello.yml (S1) and ci.yml (S3) but NOT this. Publishes a
+# student-owned GHCR image ONLY after tests pass, tagged by the triggering v*.
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+  packages: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run pytest -q
+  build-push:
+    needs: test          # broken tests block publication AND every downstream deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: lowercase owner namespace
+        id: ns
+        run: echo "ns=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: instructor/Dockerfile.reference
+          push: true
+          tags: |
+            ghcr.io/${{ steps.ns.outputs.ns }}/hello-world:${{ github.ref_name }}
+            ghcr.io/${{ steps.ns.outputs.ns }}/hello-world:latest
