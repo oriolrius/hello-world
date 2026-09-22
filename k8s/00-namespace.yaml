@@ -1,0 +1,6 @@
+# S8 hello-world on Kubernetes (APP-13). Apply this FIRST — the namespace must
+# exist before the ghcr-pull image-pull Secret and the workloads are created.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello
