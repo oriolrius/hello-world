@@ -1,0 +1,10 @@
+[project]
+name = "hello-world"
+version = "0.1.0"
+description = "DBAI Session 1 hello-world bootstrap (browser-only)."
+requires-python = ">=3.12"
+dependencies = []
+
+# uv manages the environment; there are no third-party dependencies in S1.
+[tool.uv]
+package = false

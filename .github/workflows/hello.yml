@@ -1,0 +1,19 @@
+# S1 hello workflow (APP-01). Runs on every push: it visibly checks out the
+# repository, sets up uv, and runs the bootstrap. Students do NOT edit this in
+# S1 — they only need to see it go green in the Actions tab and upload the
+# screenshot as evidence. The student-authored quality workflow (ci.yml) is
+# written later in S3 and is deliberately absent here.
+name: hello
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+      - name: Run the bootstrap
+        run: uv run python hello.py
