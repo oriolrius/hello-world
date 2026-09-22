@@ -1,0 +1,33 @@
+# INSTRUCTOR ANSWER KEY for the S3 required quality check (APP-06).
+# Students author their own .github/workflows/ci.yml; this is the reference the
+# required "quality" status check is graded against. One quality job: full
+# history, locked toolchain, ruff, pytest, and the event-range commit check.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history for the event-range commit check
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Sync locked toolchain
+        run: uv sync --locked
+      - name: Lint (ruff)
+        run: uv run ruff check .
+      - name: Tests (pytest)
+        run: uv run pytest -q
+      - name: Conventional Commits over the event range
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+          EXCLUDE_REF: origin/main
+        run: bash scripts/check-commits.sh
