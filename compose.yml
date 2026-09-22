@@ -1,0 +1,9 @@
+# S5 registry deployment (APP-10). Deploys a reviewed IMMUTABLE release tag from
+# GHCR — never a mutable default and never a local build. Committed to Git so an
+# S6 reconstruction restores this exact contract from origin.
+services:
+  hello:
+    image: ghcr.io/${GHCR_NAMESPACE:?set your GHCR namespace}/hello-world:${HELLO_IMAGE_TAG:?set the release tag}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
