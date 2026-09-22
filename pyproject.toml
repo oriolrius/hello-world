@@ -1,0 +1,20 @@
+[project]
+name = "hello-world"
+version = "1.0.0"
+description = "DBAI course hello-world HTTP application — canonical / /health /boom 404 405 contract on :8000 (APP-02)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["pyyaml>=6.0"]
+
+[project.scripts]
+hello-world = "hello_world.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["hello_world"]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
