@@ -1,10 +1,40 @@
 [project]
 name = "hello-world"
-version = "0.1.0"
-description = "DBAI Session 1 hello-world bootstrap (browser-only)."
-requires-python = ">=3.12"
-dependencies = []
+version = "1.0.0"
+description = "DBAI course hello-world HTTP application — canonical / /health /boom 404 405 contract on :8000 (APP-02)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["pyyaml>=6.0"]
 
-# uv manages the environment; there are no third-party dependencies in S1.
-[tool.uv]
-package = false
+[project.scripts]
+hello-world = "hello_world.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["hello_world"]
+
+# S3 quality toolchain (APP-04) — pinned dev tools students receive before they
+# author their own feature/test and CI workflow. No ci.yml or test_greet.py here.
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+    "commitizen>=3.29",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "1.0.0"
+version_files = ["pyproject.toml:^version"]
+tag_format = "v$version"
+# Generated merge/revert commits are accepted without a conventional prefix.
+allowed_prefixes = ["Merge", "Revert", "Bump", "Auto-merge"]

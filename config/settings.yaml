@@ -1,0 +1,7 @@
+# hello-world runtime contract inputs (host/port/greeting).
+# Valid here; the S2 starter increment ships a deliberately broken copy for
+# students to fix. Later container and Kubernetes checks exercise the SAME
+# responses this configures.
+host: 0.0.0.0
+port: 8000
+greeting: "Hello, world!"
